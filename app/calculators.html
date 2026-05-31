@@ -22,7 +22,11 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             if (window.FinSenseAuth) {
-                window.FinSenseAuth.checkAuthAndRedirect('protected');
+                window.FinSenseAuth.checkAuthAndRedirect('protected').then(() => {
+                    if (typeof loadQueryHistory === 'function') {
+                        loadQueryHistory();
+                    }
+                });
             }
         });
     </script>
@@ -155,10 +159,16 @@
             <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
             <span class="font-body-sm text-body-sm">Knowledge</span>
         </a>
-        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" href="#">
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="index.html">
             <span class="material-symbols-outlined" data-icon="history">history</span>
             <span class="font-body-sm text-body-sm">History</span>
         </a>
+        <div class="mt-xl px-4 py-2">
+            <p class="text-label-caps font-label-caps text-outline dark:text-white/40 mb-2">RECENT QUERIES</p>
+            <div class="space-y-2 text-xs" id="history-sidebar">
+                <div class="text-outline dark:text-white/30 italic px-2">No queries yet. Ask your first question!</div>
+            </div>
+        </div>
     </nav>
     <div class="mt-auto p-container-margin border-t border-outline-variant dark:border-white/10 space-y-1">
         <div class="flex items-center gap-3 px-2 py-3 mb-2">
@@ -532,6 +542,49 @@
             if (text) text.textContent = 'Dark Mode';
         }
     })();
+
+    async function loadQueryHistory() {
+        if (window.bypassAuth || !window.supabaseClient) {
+            console.log("Offline mode: Skipping database query history load.");
+            return;
+        }
+        try {
+            const session = await window.FinSenseAuth.getSession();
+            if (!session) return;
+            
+            const { data, error } = await window.supabaseClient
+                .from('query_history')
+                .select('query, response')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
+            const sidebar = document.getElementById('history-sidebar');
+            if (!sidebar) return;
+            sidebar.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                sidebar.innerHTML = '<div class="text-outline dark:text-white/30 italic px-2">No queries yet. Ask your first question!</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const q = item.query;
+                const truncated = q.length > 28 ? q.substring(0, 25) + '...' : q;
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left truncate text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] hover:bg-surface-container dark:hover:bg-white/10 px-2 py-1.5 rounded transition-colors block text-xs";
+                btn.title = q;
+                btn.innerText = truncated;
+                btn.onclick = () => {
+                    window.location.href = 'index.html?query=' + encodeURIComponent(q);
+                };
+                sidebar.appendChild(btn);
+            });
+        } catch (err) {
+            console.error("Error fetching query history:", err);
+        }
+    }
 </script>
 </body>
 </html>

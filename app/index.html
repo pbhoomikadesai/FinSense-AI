@@ -26,6 +26,19 @@
                     if (typeof loadQueryHistory === 'function') {
                         loadQueryHistory();
                     }
+                    
+                    // Handle automatic search from redirected pages
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const qParam = urlParams.get('query');
+                    if (qParam) {
+                        const textarea = document.getElementById('query-input');
+                        if (textarea) {
+                            textarea.value = qParam;
+                            setTimeout(() => {
+                                handleSubmit();
+                            }, 500);
+                        }
+                    }
                 });
             }
         });
@@ -211,7 +224,7 @@
             <span class="material-symbols-outlined">menu_book</span>
             <span class="font-body-sm">Knowledge</span>
         </a>
-        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="#">
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="index.html">
             <span class="material-symbols-outlined">history</span>
             <span class="font-body-sm">History</span>
         </a>
