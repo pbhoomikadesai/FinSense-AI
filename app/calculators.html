@@ -399,9 +399,9 @@
         const totalInterest = totalPayable - P;
 
         document.getElementById('emi-result-monthly').innerText = formatINR(Math.round(emi));
-        document.getElementById('emi-res-principal').innerText = (P / 100000).toFixed(1) + 'L';
-        document.getElementById('emi-res-interest').innerText = (totalInterest / 100000).toFixed(1) + 'L';
-        document.getElementById('emi-res-total').innerText = totalPayable > 10000000 ? (totalPayable / 10000000).toFixed(2) + 'Cr' : (totalPayable / 100000).toFixed(1) + 'L';
+        document.getElementById('emi-res-principal').innerText = formatINR(Math.round(P));
+        document.getElementById('emi-res-interest').innerText = formatINR(Math.round(totalInterest));
+        document.getElementById('emi-res-total').innerText = formatINR(Math.round(totalPayable));
     }
 
     // 2. SIP
@@ -435,8 +435,8 @@
         const returns = FV - totalInvested;
 
         document.getElementById('sip-result-total').innerText = formatINR(Math.round(FV));
-        document.getElementById('sip-res-invested').innerText = (totalInvested / 100000).toFixed(1) + 'L';
-        document.getElementById('sip-res-returns').innerText = (returns / 100000).toFixed(1) + 'L';
+        document.getElementById('sip-res-invested').innerText = formatINR(Math.round(totalInvested));
+        document.getElementById('sip-res-returns').innerText = formatINR(Math.round(returns));
     }
 
     // 3. FD
@@ -470,7 +470,7 @@
         const interest = total - P;
 
         document.getElementById('fd-result-total').innerText = formatINR(Math.round(total));
-        document.getElementById('fd-res-interest').innerText = interest > 100000 ? (interest / 100000).toFixed(1) + 'L' : (interest / 1000).toFixed(1) + 'K';
+        document.getElementById('fd-res-interest').innerText = formatINR(Math.round(interest));
     }
 
     // Event Listeners
