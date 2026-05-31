@@ -366,6 +366,17 @@
 
     const formatINR = (val) => new Intl.NumberFormat('en-IN').format(val);
 
+    const formatDynamicINR = (val) => {
+        const absVal = Math.abs(val);
+        if (absVal >= 10000000) { // >= 1 Crore
+            return (val / 10000000).toFixed(2) + ' Cr';
+        } else if (absVal >= 1000000) { // >= 10 Lakhs (e.g. 50 Lakhs)
+            return (val / 100000).toFixed(1) + ' L';
+        } else { // E.g. 1,44,000 or 84,300
+            return formatINR(val);
+        }
+    };
+
     // DUAL-BINDING CORE LOGIC
 
     // 1. EMI
@@ -399,9 +410,9 @@
         const totalInterest = totalPayable - P;
 
         document.getElementById('emi-result-monthly').innerText = formatINR(Math.round(emi));
-        document.getElementById('emi-res-principal').innerText = formatINR(Math.round(P));
-        document.getElementById('emi-res-interest').innerText = formatINR(Math.round(totalInterest));
-        document.getElementById('emi-res-total').innerText = formatINR(Math.round(totalPayable));
+        document.getElementById('emi-res-principal').innerText = formatDynamicINR(Math.round(P));
+        document.getElementById('emi-res-interest').innerText = formatDynamicINR(Math.round(totalInterest));
+        document.getElementById('emi-res-total').innerText = formatDynamicINR(Math.round(totalPayable));
     }
 
     // 2. SIP
@@ -435,8 +446,8 @@
         const returns = FV - totalInvested;
 
         document.getElementById('sip-result-total').innerText = formatINR(Math.round(FV));
-        document.getElementById('sip-res-invested').innerText = formatINR(Math.round(totalInvested));
-        document.getElementById('sip-res-returns').innerText = formatINR(Math.round(returns));
+        document.getElementById('sip-res-invested').innerText = formatDynamicINR(Math.round(totalInvested));
+        document.getElementById('sip-res-returns').innerText = formatDynamicINR(Math.round(returns));
     }
 
     // 3. FD
@@ -470,7 +481,7 @@
         const interest = total - P;
 
         document.getElementById('fd-result-total').innerText = formatINR(Math.round(total));
-        document.getElementById('fd-res-interest').innerText = formatINR(Math.round(interest));
+        document.getElementById('fd-res-interest').innerText = formatDynamicINR(Math.round(interest));
     }
 
     // Event Listeners
