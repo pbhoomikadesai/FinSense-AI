@@ -304,26 +304,26 @@
             return;
         }
 
-        // Open modal immediately with loading state
-        document.getElementById('modal-title').innerText = query;
-        const catBadge = document.getElementById('modal-category');
-        catBadge.innerText = "AI Assistant";
-        catBadge.className = "inline-block text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 bg-primary";
-        
-        document.getElementById('modal-content').innerHTML = `
-            <div class="flex flex-col items-center justify-center py-xl space-y-md">
-                <span class="animate-spin material-symbols-outlined text-primary text-[48px]">progress_activity</span>
-                <p class="font-semibold text-on-surface-variant animate-pulse">FinSense AI is thinking...</p>
+        // Create a loading card in the grid
+        const container = document.getElementById('articles-container');
+        const loadingCard = document.createElement('article');
+        loadingCard.className = "article-card bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(124,58,237,0.08)] animate-pulse";
+        loadingCard.innerHTML = `
+            <div class="p-lg space-y-md">
+                <span class="inline-block bg-primary/20 text-transparent text-label-caps font-label-caps px-3 py-1 rounded-full uppercase select-none">AI Answer</span>
+                <div class="h-6 bg-surface-container-high dark:bg-white/10 rounded w-3/4"></div>
+                <div class="space-y-2">
+                    <div class="h-4 bg-surface-container-high dark:bg-white/10 rounded"></div>
+                    <div class="h-4 bg-surface-container-high dark:bg-white/10 rounded w-5/6"></div>
+                </div>
+                <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                    <div class="h-4 bg-primary/20 rounded w-20"></div>
+                </div>
             </div>
         `;
-        document.getElementById('modal-read-time').innerText = "Live Search";
-
-        const modal = document.getElementById('article-modal');
-        const modalBox = document.getElementById('modal-box');
         
-        modal.classList.remove('hidden');
-        modalBox.classList.remove('scale-95', 'opacity-0');
-        modalBox.classList.add('scale-100', 'opacity-100');
+        const fallback = document.getElementById('no-results-card');
+        container.insertBefore(loadingCard, fallback);
 
         try {
             // Get session token
@@ -356,30 +356,10 @@
             let pointsHtml = "";
             if (data.key_points && data.key_points.length > 0) {
                 pointsHtml = `
-                    <div class="bg-[#F5F3FF] dark:bg-[#2b2564] p-md rounded-xl space-y-sm mt-md">
-                        <h4 class="font-semibold text-primary dark:text-[#adc9eb] text-sm">Key Takeaways</h4>
-                        <ul class="list-disc pl-5 space-y-1 text-sm text-on-surface-variant dark:text-white/80">
-                            ${data.key_points.map(p => `<li>${p}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-
-            // Sources
-            let sourcesHtml = "";
-            if (data.sources && data.sources.length > 0) {
-                sourcesHtml = `
-                    <div class="mt-md pt-md border-t border-outline-variant dark:border-white/10">
-                        <h4 class="font-semibold text-on-surface dark:text-white text-sm mb-sm">Verified Sources</h4>
-                        <div class="flex flex-wrap gap-sm">
-                            ${data.sources.map(s => `
-                                <a href="${s.url}" target="_blank" class="px-sm py-1 bg-surface-container dark:bg-white/10 hover:bg-primary/10 text-primary dark:text-[#adc9eb] text-[11px] font-semibold rounded transition-colors flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-xs">link</span>
-                                    ${s.title}
-                                </a>
-                            `).join('')}
-                        </div>
-                    </div>
+                    <h4 class="font-bold text-on-surface dark:text-white mt-4 mb-2">Key Takeaways:</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        ${data.key_points.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
                 `;
             }
 
@@ -411,39 +391,59 @@
             let recHtml = "";
             if (data.recommendation) {
                 recHtml = `
-                    <div class="bg-[#D1FAE5] dark:bg-[#093a24] border-l-4 border-secondary p-md rounded-r-lg mt-md">
-                        <div class="flex items-center gap-2 mb-1 text-secondary dark:text-[#82f5c1] text-xs">
-                            <span class="material-symbols-outlined text-sm">verified</span>
-                            <span class="font-semibold">FinSense Recommendation</span>
-                        </div>
-                        <p class="text-xs text-on-secondary-container dark:text-[#a3f4cd] font-medium">${data.recommendation}</p>
+                    <div class="mt-4 p-md bg-[#D1FAE5] dark:bg-[#093a24] border-l-4 border-secondary rounded-r-lg">
+                        <p class="text-xs text-on-secondary-container dark:text-[#a3f4cd] font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">verified</span> Recommendation:
+                        </p>
+                        <p class="text-xs text-on-secondary-container dark:text-[#a3f4cd]">${data.recommendation}</p>
                     </div>
                 `;
             }
 
-            document.getElementById('modal-content').innerHTML = `
-                <div>
-                    ${formattedAnswer}
-                    ${recHtml}
-                    ${pointsHtml}
-                    ${calcHtml}
-                    ${sourcesHtml}
+            // Save to articlesData
+            articlesData[query] = {
+                category: "AI Answer",
+                colorClass: "bg-primary",
+                readTime: "3 min read",
+                content: `
+                    <div>
+                        ${formattedAnswer}
+                        ${recHtml}
+                        ${pointsHtml}
+                        ${calcHtml}
+                    </div>
+                `
+            };
+
+            // Update loading card to a real article card
+            loadingCard.classList.remove('animate-pulse');
+            // Extract a summary (approx 120 characters)
+            const summary = data.answer.length > 120 ? data.answer.substring(0, 120) + "..." : data.answer;
+            
+            loadingCard.innerHTML = `
+                <div class="p-lg space-y-md">
+                    <span class="inline-block bg-primary text-on-primary text-label-caps font-label-caps px-3 py-1 rounded-full uppercase">AI Answer</span>
+                    <h3 class="font-card-title text-card-title text-on-surface dark:text-white">${query}</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/70">${summary}</p>
+                    <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                        <button class="text-primary dark:text-[#adc9eb] font-bold text-sm hover:underline" onclick="openModal('${query.replace(/'/g, "\\'")}')">Read More →</button>
+                    </div>
                 </div>
             `;
-            
-            if (data.last_updated) {
-                document.getElementById('modal-read-time').innerText = `Updated: ${data.last_updated}`;
-            }
+
+            // Reset input and hide fallback
+            searchInput.value = "";
+            fallback.classList.add('hidden');
+
+            // Show all articles again to show the newly added card
+            document.querySelectorAll('.article-card').forEach(article => {
+                article.classList.remove('hidden');
+            });
 
         } catch (err) {
             console.error("AI query failed:", err);
-            document.getElementById('modal-content').innerHTML = `
-                <div class="text-center py-lg space-y-md">
-                    <span class="material-symbols-outlined text-error text-[48px]">error</span>
-                    <h4 class="font-semibold text-on-surface dark:text-white">Failed to connect to AI Assistant</h4>
-                    <p class="text-body-sm text-on-surface-variant">Make sure your backend FastAPI server is running.</p>
-                </div>
-            `;
+            loadingCard.remove();
+            alert("Failed to get an answer from the AI Assistant. Make sure the FastAPI server is running.");
         }
     }
 
