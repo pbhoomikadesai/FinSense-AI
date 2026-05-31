@@ -179,10 +179,15 @@
             <h1 class="font-hero-title text-hero-title text-on-surface dark:text-white mb-md">Financial Knowledge Hub</h1>
             <p class="font-body-lg text-body-lg text-on-surface-variant dark:text-white/60 mb-xl">Simple explanations for complex finance concepts. Start your journey to financial freedom today.</p>
             <!-- Search Bar -->
-            <div class="relative max-w-2xl mx-auto">
-                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary dark:text-[#adc9eb]">search</span>
-                <input class="w-full bg-surface-container-low dark:bg-[#1f1b4c] border-none rounded-xl py-4 pl-14 pr-6 text-on-surface dark:text-white ring-1 ring-primary/10 focus:ring-2 focus:ring-primary shadow-sm transition-all text-body-lg font-body-lg" id="article-search-input" placeholder="Search articles..." type="text"/>
-            </div>
+            <form id="search-form" class="relative max-w-2xl mx-auto flex items-center" onsubmit="return false;">
+                <div class="relative w-full">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary dark:text-[#adc9eb]">search</span>
+                    <input class="w-full bg-surface-container-low dark:bg-[#1f1b4c] border-none rounded-xl py-4 pl-14 pr-32 text-on-surface dark:text-white ring-1 ring-primary/10 focus:ring-2 focus:ring-primary shadow-sm transition-all text-body-lg font-body-lg" id="article-search-input" placeholder="Search articles or ask any question..." type="text"/>
+                    <button type="submit" id="ask-ai-btn" class="absolute right-2 top-1/2 -translate-y-1/2 px-md py-sm bg-primary hover:bg-surface-tint text-white rounded-lg text-sm font-semibold transition-all shadow-md active:scale-95">
+                        Ask AI
+                    </button>
+                </div>
+            </form>
         </section>
         <!-- Category Filter -->
         <section class="mb-xl">
@@ -240,6 +245,16 @@
                     </div>
                 </div>
             </article>
+            
+            <!-- No results fallback -->
+            <div id="no-results-card" class="col-span-full bg-surface-container-low dark:bg-[#1a1740] border border-dashed border-primary/30 rounded-xl p-xl text-center hidden">
+                <span class="material-symbols-outlined text-primary text-[48px] mb-sm">psychology</span>
+                <h3 class="font-card-title text-card-title text-on-surface dark:text-white mb-xs">No matching local articles found</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60 mb-lg">Ask FinSense AI to answer your question in real-time.</p>
+                <button id="ask-ai-fallback-btn" class="px-lg py-md bg-primary hover:bg-surface-tint text-white font-semibold rounded-xl transition-all shadow-md active:scale-95">
+                    Ask FinSense AI
+                </button>
+            </div>
         </section>
     </div>
 </main>
@@ -248,16 +263,189 @@
     const searchInput = document.getElementById('article-search-input');
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
+        let visibleCount = 0;
+        
         document.querySelectorAll('.article-card').forEach(article => {
             const title = article.querySelector('h3').textContent.toLowerCase();
             const desc = article.querySelector('p').textContent.toLowerCase();
             if (title.includes(query) || desc.includes(query)) {
                 article.classList.remove('hidden');
+                visibleCount++;
             } else {
                 article.classList.add('hidden');
             }
         });
+
+        const fallback = document.getElementById('no-results-card');
+        if (query.trim().length > 0 && visibleCount === 0) {
+            fallback.classList.remove('hidden');
+            document.getElementById('ask-ai-fallback-btn').onclick = () => askFinSenseAI(searchInput.value.trim());
+        } else {
+            fallback.classList.add('hidden');
+        }
     });
+
+    // Form submit listener
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                askFinSenseAI(query);
+            }
+        });
+    }
+
+    // Dynamic AI query handler
+    async function askFinSenseAI(query) {
+        if (query.length < 10) {
+            alert("Please enter a question of at least 10 characters.");
+            return;
+        }
+
+        // Open modal immediately with loading state
+        document.getElementById('modal-title').innerText = query;
+        const catBadge = document.getElementById('modal-category');
+        catBadge.innerText = "AI Assistant";
+        catBadge.className = "inline-block text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 bg-primary";
+        
+        document.getElementById('modal-content').innerHTML = `
+            <div class="flex flex-col items-center justify-center py-xl space-y-md">
+                <span class="animate-spin material-symbols-outlined text-primary text-[48px]">progress_activity</span>
+                <p class="font-semibold text-on-surface-variant animate-pulse">FinSense AI is thinking...</p>
+            </div>
+        `;
+        document.getElementById('modal-read-time').innerText = "Live Search";
+
+        const modal = document.getElementById('article-modal');
+        const modalBox = document.getElementById('modal-box');
+        
+        modal.classList.remove('hidden');
+        modalBox.classList.remove('scale-95', 'opacity-0');
+        modalBox.classList.add('scale-100', 'opacity-100');
+
+        try {
+            // Get session token
+            const session = await window.FinSenseAuth.getSession();
+            const token = session ? session.access_token : "";
+            
+            // Render serves both on same origin in prod, fallback to localhost in dev
+            const baseUrl = window.location.origin.startsWith('file') ? 'http://127.0.0.1:8000' : '';
+            
+            const res = await fetch(`${baseUrl}/api/query`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!res.ok) {
+                throw new Error(`API error: ${res.status}`);
+            }
+
+            const data = await res.json();
+            
+            // Format answer with sentence spacing
+            const sentences = data.answer.split(/(?<=[.!?])\s+/);
+            const formattedAnswer = sentences.map(s => `<p class="mb-sm">${s}</p>`).join('');
+
+            // Key takeaways
+            let pointsHtml = "";
+            if (data.key_points && data.key_points.length > 0) {
+                pointsHtml = `
+                    <div class="bg-[#F5F3FF] dark:bg-[#2b2564] p-md rounded-xl space-y-sm mt-md">
+                        <h4 class="font-semibold text-primary dark:text-[#adc9eb] text-sm">Key Takeaways</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-sm text-on-surface-variant dark:text-white/80">
+                            ${data.key_points.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Sources
+            let sourcesHtml = "";
+            if (data.sources && data.sources.length > 0) {
+                sourcesHtml = `
+                    <div class="mt-md pt-md border-t border-outline-variant dark:border-white/10">
+                        <h4 class="font-semibold text-on-surface dark:text-white text-sm mb-sm">Verified Sources</h4>
+                        <div class="flex flex-wrap gap-sm">
+                            ${data.sources.map(s => `
+                                <a href="${s.url}" target="_blank" class="px-sm py-1 bg-surface-container dark:bg-white/10 hover:bg-primary/10 text-primary dark:text-[#adc9eb] text-[11px] font-semibold rounded transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">link</span>
+                                    ${s.title}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Calculations
+            let calcHtml = "";
+            if (data.calculations && Object.keys(data.calculations).length > 0) {
+                calcHtml = `
+                    <div class="bg-surface-container-high dark:bg-[#1a1740] border border-outline-variant dark:border-white/10 p-md rounded-xl mt-md">
+                        <h4 class="font-semibold text-on-surface dark:text-white text-sm mb-sm flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary">calculate</span> Amortization & Calculations
+                        </h4>
+                        <table class="w-full text-sm">
+                            <tbody>
+                                ${Object.entries(data.calculations).map(([k, v]) => `
+                                    <tr class="border-b border-outline-variant/30">
+                                        <td class="py-1 text-on-surface-variant dark:text-white/60 capitalize">${k.replace(/_/g, ' ')}</td>
+                                        <td class="py-1 text-right font-bold text-on-surface dark:text-white">
+                                            ${typeof v === 'number' ? (k.includes('rate') ? `${v}%` : `₹${v.toLocaleString('en-IN')}`) : v}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Recommendation
+            let recHtml = "";
+            if (data.recommendation) {
+                recHtml = `
+                    <div class="bg-[#D1FAE5] dark:bg-[#093a24] border-l-4 border-secondary p-md rounded-r-lg mt-md">
+                        <div class="flex items-center gap-2 mb-1 text-secondary dark:text-[#82f5c1] text-xs">
+                            <span class="material-symbols-outlined text-sm">verified</span>
+                            <span class="font-semibold">FinSense Recommendation</span>
+                        </div>
+                        <p class="text-xs text-on-secondary-container dark:text-[#a3f4cd] font-medium">${data.recommendation}</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-content').innerHTML = `
+                <div>
+                    ${formattedAnswer}
+                    ${recHtml}
+                    ${pointsHtml}
+                    ${calcHtml}
+                    ${sourcesHtml}
+                </div>
+            `;
+            
+            if (data.last_updated) {
+                document.getElementById('modal-read-time').innerText = `Updated: ${data.last_updated}`;
+            }
+
+        } catch (err) {
+            console.error("AI query failed:", err);
+            document.getElementById('modal-content').innerHTML = `
+                <div class="text-center py-lg space-y-md">
+                    <span class="material-symbols-outlined text-error text-[48px]">error</span>
+                    <h4 class="font-semibold text-on-surface dark:text-white">Failed to connect to AI Assistant</h4>
+                    <p class="text-body-sm text-on-surface-variant">Make sure your backend FastAPI server is running.</p>
+                </div>
+            `;
+        }
+    }
 
     // Category Filter logic
     document.querySelectorAll('.category-btn').forEach(btn => {
