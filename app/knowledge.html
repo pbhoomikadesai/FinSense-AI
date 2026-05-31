@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+    </script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Learn Finance — FinSense AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Supabase SDK & Auth Helper -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-auth.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.FinSenseAuth) {
+                window.FinSenseAuth.checkAuthAndRedirect('protected');
+            }
+        });
+    </script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e3dfff",
+                    "primary": "#630ed4",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-primary-fixed": "#25005a",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#005137",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#ede0ff",
+                    "on-error": "#ffffff",
+                    "secondary": "#006c4a",
+                    "surface-bright": "#fcf8ff",
+                    "on-secondary-fixed": "#002114",
+                    "surface-container-high": "#e9e5ff",
+                    "surface-dim": "#dad6ff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#82f5c1",
+                    "inverse-primary": "#d2bbff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#00714e",
+                    "secondary-fixed-dim": "#68dba9",
+                    "outline": "#7b7487",
+                    "on-tertiary-fixed-variant": "#2d4965",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#d0e4ff",
+                    "tertiary-container": "#4e6987",
+                    "surface-tint": "#732ee4",
+                    "on-tertiary-fixed": "#001d35",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-fixed": "#85f8c4",
+                    "background": "#fcf8ff",
+                    "outline-variant": "#ccc3d8",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#4a4455",
+                    "inverse-on-surface": "#f3eeff",
+                    "surface": "#fcf8ff",
+                    "on-background": "#181445",
+                    "surface-container": "#efebff",
+                    "primary-container": "#7c3aed",
+                    "surface-container-highest": "#e3dfff",
+                    "surface-container-low": "#f6f2ff",
+                    "on-surface": "#181445",
+                    "inverse-surface": "#2d2a5b",
+                    "tertiary-fixed-dim": "#adc9eb",
+                    "tertiary": "#36516e",
+                    "on-tertiary-container": "#d6e7ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "xl": "48px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "gutter": "16px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "card-title": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "hero-title": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "page-title-mobile": ["Inter"],
+                    "hero-title-mobile": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "section-head": ["Inter"],
+                    "page-title": ["Inter"]
+            },
+            "fontSize": {
+                    "card-title": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "hero-title": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "page-title-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "hero-title-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "section-head": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "page-title": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .article-card { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; }
+        .article-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(124, 58, 237, 0.12); }
+    </style>
+</head>
+<body class="bg-background text-on-surface dark:bg-[#131130] dark:text-[#f3eeff] font-body-lg min-h-screen flex transition-colors duration-200">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col z-40 bg-surface-container-low dark:bg-[#0f0d26] border-r border-outline-variant dark:border-white/10 shadow-xl w-64 md:flex hidden">
+    <div class="px-container-margin py-xl flex items-center gap-sm">
+        <img src="logo.png" alt="FinSense AI Logo" class="h-8 w-8 rounded-lg object-contain shadow-sm"/>
+        <h1 class="text-card-title font-card-title text-primary dark:text-[#adc9eb]">FinSense AI</h1>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="index.html">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span class="font-body-sm text-body-sm">Dashboard</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="calculators.html">
+            <span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+            <span class="font-body-sm text-body-sm">Calculators</span>
+        </a>
+        <a class="bg-primary-container text-on-primary-container dark:bg-[#630ed4] dark:text-[#ede0ff] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 active:scale-[0.98]" href="knowledge.html">
+            <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+            <span class="font-body-sm text-body-sm">Knowledge</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" href="#">
+            <span class="material-symbols-outlined" data-icon="history">history</span>
+            <span class="font-body-sm text-body-sm">History</span>
+        </a>
+    </nav>
+    <div class="mt-auto p-container-margin border-t border-outline-variant dark:border-white/10 space-y-1">
+        <div class="flex items-center gap-3 px-2 py-3 mb-2">
+            <div data-auth-initials class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">GU</div>
+            <div>
+                <p data-auth-name class="font-body-sm text-body-sm font-bold text-on-surface dark:text-white leading-none">Guest User</p>
+                <p data-auth-email class="text-[10px] text-on-surface-variant dark:text-white/60">guest@finsense.ai</p>
+            </div>
+        </div>
+        <button class="w-full text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="toggleTheme()">
+            <span class="material-symbols-outlined" id="theme-toggle-icon">dark_mode</span>
+            <span class="font-body-sm" id="theme-toggle-text">Dark Mode</span>
+        </button>
+        <button class="w-full text-left text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="window.FinSenseAuth.signOut()">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="font-body-sm">Sign Out</span>
+        </button>
+    </div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-container-margin transition-all duration-300">
+    <div class="flex-1 px-container-margin md:px-xl py-lg md:py-xl">
+        <!-- Hero Section -->
+        <section class="mb-xl text-center max-w-4xl mx-auto">
+            <h1 class="font-hero-title text-hero-title text-on-surface dark:text-white mb-md">Financial Knowledge Hub</h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant dark:text-white/60 mb-xl">Simple explanations for complex finance concepts. Start your journey to financial freedom today.</p>
+            <!-- Search Bar -->
+            <div class="relative max-w-2xl mx-auto">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary dark:text-[#adc9eb]">search</span>
+                <input class="w-full bg-surface-container-low dark:bg-[#1f1b4c] border-none rounded-xl py-4 pl-14 pr-6 text-on-surface dark:text-white ring-1 ring-primary/10 focus:ring-2 focus:ring-primary shadow-sm transition-all text-body-lg font-body-lg" id="article-search-input" placeholder="Search articles..." type="text"/>
+            </div>
+        </section>
+        <!-- Category Filter -->
+        <section class="mb-xl">
+            <div class="flex gap-md overflow-x-auto hide-scrollbar pb-xs">
+                <button class="category-btn px-lg py-sm bg-primary text-on-primary rounded-full font-semibold whitespace-nowrap shadow-md shadow-primary/20" data-category="all">All Topics</button>
+                <button class="category-btn px-lg py-sm bg-surface-container-high dark:bg-white/10 text-on-surface-variant dark:text-white/70 hover:bg-primary/10 hover:text-primary rounded-full font-semibold whitespace-nowrap transition-all" data-category="loans">Loans</button>
+                <button class="category-btn px-lg py-sm bg-surface-container-high dark:bg-white/10 text-on-surface-variant dark:text-white/70 hover:bg-primary/10 hover:text-primary rounded-full font-semibold whitespace-nowrap transition-all" data-category="investments">Investments</button>
+                <button class="category-btn px-lg py-sm bg-surface-container-high dark:bg-white/10 text-on-surface-variant dark:text-white/70 hover:bg-primary/10 hover:text-primary rounded-full font-semibold whitespace-nowrap transition-all" data-category="tax">Tax</button>
+                <button class="category-btn px-lg py-sm bg-surface-container-high dark:bg-white/10 text-on-surface-variant dark:text-white/70 hover:bg-primary/10 hover:text-primary rounded-full font-semibold whitespace-nowrap transition-all" data-category="banking">Banking</button>
+            </div>
+        </section>
+        <!-- Article Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg" id="articles-container">
+            <!-- Card 1: Loans -->
+            <article class="article-card bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <div class="p-lg space-y-md">
+                    <span class="inline-block bg-primary text-on-primary text-label-caps font-label-caps px-3 py-1 rounded-full uppercase">Loans</span>
+                    <h3 class="font-card-title text-card-title text-on-surface dark:text-white">Understanding Home Loan EMIs</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/70">Learn how your monthly installments are calculated and tips to reduce your total interest burden over time.</p>
+                    <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                        <button class="text-primary dark:text-[#adc9eb] font-bold text-sm hover:underline" onclick="openModal('Understanding Home Loan EMIs')">Read More →</button>
+                    </div>
+                </div>
+            </article>
+            <!-- Card 2: Investments -->
+            <article class="article-card bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <div class="p-lg space-y-md">
+                    <span class="inline-block bg-secondary text-on-secondary text-label-caps font-label-caps px-3 py-1 rounded-full uppercase">Investments</span>
+                    <h3 class="font-card-title text-card-title text-on-surface dark:text-white">Mutual Funds for Beginners</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/70">A complete guide to SIPs, ELSS, and choosing the right mutual fund scheme for your long-term wealth goals.</p>
+                    <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                        <button class="text-primary dark:text-[#adc9eb] font-bold text-sm hover:underline" onclick="openModal('Mutual Funds for Beginners')">Read More →</button>
+                    </div>
+                </div>
+            </article>
+            <!-- Card 3: Tax -->
+            <article class="article-card bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <div class="p-lg space-y-md">
+                    <span class="inline-block bg-tertiary-container text-on-tertiary-container text-label-caps font-label-caps px-3 py-1 rounded-full uppercase">Tax</span>
+                    <h3 class="font-card-title text-card-title text-on-surface dark:text-white">Maximize Your 80C Deductions</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/70">Discover the best tax-saving instruments under Section 80C, from PPF to Life Insurance premiums.</p>
+                    <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                        <button class="text-primary dark:text-[#adc9eb] font-bold text-sm hover:underline" onclick="openModal('Maximize Your 80C Deductions')">Read More →</button>
+                    </div>
+                </div>
+            </article>
+            <!-- Card 4: Banking -->
+            <article class="article-card bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <div class="p-lg space-y-md">
+                    <span class="inline-block bg-secondary-fixed text-on-secondary-fixed text-label-caps font-label-caps px-3 py-1 rounded-full uppercase">Banking</span>
+                    <h3 class="font-card-title text-card-title text-on-surface dark:text-white">UPI Safety: Protect Your Money</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/70">Essential security practices for digital payments. Learn how to spot and avoid UPI frauds.</p>
+                    <div class="flex justify-end pt-2 border-t border-outline-variant dark:border-white/10">
+                        <button class="text-primary dark:text-[#adc9eb] font-bold text-sm hover:underline" onclick="openModal('UPI Safety: Protect Your Money')">Read More →</button>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </div>
+</main>
+<script>
+    // Search filter logic
+    const searchInput = document.getElementById('article-search-input');
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.article-card').forEach(article => {
+            const title = article.querySelector('h3').textContent.toLowerCase();
+            const desc = article.querySelector('p').textContent.toLowerCase();
+            if (title.includes(query) || desc.includes(query)) {
+                article.classList.remove('hidden');
+            } else {
+                article.classList.add('hidden');
+            }
+        });
+    });
+
+    // Category Filter logic
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state colors
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.className = "px-lg py-sm bg-surface-container-high dark:bg-white/10 text-on-surface-variant dark:text-white/70 hover:bg-primary/10 hover:text-primary rounded-full font-semibold whitespace-nowrap transition-all category-btn";
+            });
+            btn.className = "px-lg py-sm bg-primary text-on-primary rounded-full font-semibold whitespace-nowrap shadow-md shadow-primary/20 category-btn";
+
+            const cat = btn.getAttribute('data-category').toLowerCase();
+            document.querySelectorAll('.article-card').forEach(card => {
+                const cardCatBadge = card.querySelector('span').textContent.toLowerCase().trim();
+                if (cat === 'all' || cardCatBadge === cat) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    const articlesData = {
+        "Understanding Home Loan EMIs": {
+            category: "Loans",
+            colorClass: "bg-primary",
+            readTime: "8 min read",
+            content: `
+                <p>Home Loan Equated Monthly Installments (EMIs) consist of two parts: the principal amount and the interest. In the initial years, a major portion of your EMI goes towards interest payments. Over time, the principal component increases.</p>
+                <h4 class="font-bold text-on-surface dark:text-white mt-4 mb-2">Key Tips to Reduce Total Interest:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Prepayments:</strong> Even making one extra EMI prepayment per year can significantly cut down your total loan tenure and save lakhs in interest.</li>
+                    <li><strong>Shorter Tenures:</strong> Opting for a 15-year tenure instead of 20 or 25 years increases monthly payments slightly but reduces overall interest dramatically.</li>
+                    <li><strong>Refinancing / Balance Transfer:</strong> If repo rates decrease and your current bank is not offering competitive rates, compare with other lenders and switch.</li>
+                </ul>
+                <p class="mt-4">Use our live EMI calculator in the "Calculators" tab to plan your budget and visualize your amortization schedule.</p>
+            `
+        },
+        "Mutual Funds for Beginners": {
+            category: "Investments",
+            colorClass: "bg-secondary",
+            readTime: "12 min read",
+            content: `
+                <p>Mutual funds pool money from multiple investors to buy a diversified portfolio of stocks, bonds, or other securities. This is managed by professional fund managers.</p>
+                <h4 class="font-bold text-on-surface dark:text-white mt-4 mb-2">Important Concepts for Beginners:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Systematic Investment Plan (SIP):</strong> A disciplined way to invest a fixed amount regularly (monthly/quarterly) and benefit from rupee cost averaging. You buy more units when prices are low and fewer when prices are high.</li>
+                    <li><strong>Equity Linked Savings Scheme (ELSS):</strong> A tax-saving equity mutual fund with a 3-year lock-in period. Under the old tax regime, it offers deductions up to ₹1.5L under Section 80C.</li>
+                    <li><strong>Risk vs. Reward:</strong> Match your investment options to your goals. For long-term wealth, equity mutual funds are suitable. For short-term needs, debt/liquid funds are preferred.</li>
+                </ul>
+                <p class="mt-4">Start small with SIPs as low as ₹500/month to build financial discipline early.</p>
+            `
+        },
+        "Maximize Your 80C Deductions": {
+            category: "Tax",
+            colorClass: "bg-tertiary-container",
+            readTime: "6 min read",
+            content: `
+                <p>Section 80C of the Income Tax Act allows individuals to claim deductions up to ₹1.5 Lakh per year from their taxable income. This benefit is applicable under the Old Tax Regime.</p>
+                <h4 class="font-bold text-on-surface dark:text-white mt-4 mb-2">Top Tax-Saving Instruments:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>Public Provident Fund (PPF):</strong> Risk-free, government-backed long-term saving option with tax-free interest and maturity returns.</li>
+                    <li><strong>ELSS Mutual Funds:</strong> Shortest lock-in period (3 years) among all tax-saving options. Offers the potential for higher equity returns.</li>
+                    <li><strong>Employee Provident Fund (EPF):</strong> Monthly contributions deducted directly from your salary automatically count towards your Section 80C limit.</li>
+                    <li><strong>Life Insurance Premiums & School Fees:</strong> Premiums paid for self/family and school tuition fees for kids are also eligible under Section 80C.</li>
+                </ul>
+                <p class="mt-4">Compare tax savings using our calculators before locking your money for long periods.</p>
+            `
+        },
+        "UPI Safety: Protect Your Money": {
+            category: "Banking",
+            colorClass: "bg-secondary-fixed",
+            readTime: "5 min read",
+            content: `
+                <p>Unified Payments Interface (UPI) has transformed digital transactions in India, making payments instant and effortless. However, this has also attracted digital fraudsters.</p>
+                <h4 class="font-bold text-on-surface dark:text-white mt-4 mb-2">Essential UPI Safety Rules:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong>UPI PIN is ONLY for sending money:</strong> You NEVER need to enter your PIN to receive money. If someone asks you to enter your PIN to receive a cashback or refund, it is a scam.</li>
+                    <li><strong>Verify Receiver Names:</strong> UPI apps display the registered name of the merchant/person before you finalize the payment. Double-check this name.</li>
+                    <li><strong>Never click unsolicited links:</strong> Avoid clicking links sent via SMS/WhatsApp claiming you won a lottery or reward that requests your UPI details.</li>
+                    <li><strong>Set Transaction Limits:</strong> Set daily limit controls in your banking app for UPI transactions to minimize potential damage in case of theft.</li>
+                </ul>
+                <p class="mt-4">Ensure your UPI mobile application is downloaded only from official stores (Google Play / Apple App Store) and kept up-to-date.</p>
+            `
+        }
+    };
+
+    function openModal(title) {
+        const data = articlesData[title];
+        if (!data) return;
+
+        document.getElementById('modal-title').innerText = title;
+        
+        const catBadge = document.getElementById('modal-category');
+        catBadge.innerText = data.category;
+        
+        // Dynamic colors for category tags
+        catBadge.className = `inline-block text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 ${data.colorClass}`;
+        
+        document.getElementById('modal-content').innerHTML = data.content;
+        document.getElementById('modal-read-time').innerText = data.readTime;
+
+        const modal = document.getElementById('article-modal');
+        const modalBox = document.getElementById('modal-box');
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalBox.classList.remove('scale-95', 'opacity-0');
+            modalBox.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('article-modal');
+        const modalBox = document.getElementById('modal-box');
+        
+        modalBox.classList.remove('scale-100', 'opacity-100');
+        modalBox.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // Theme Toggle Functionality
+    function toggleTheme() {
+        const html = document.documentElement;
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Sync initial state of toggle text and icon in sidebar
+    (function() {
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (document.documentElement.classList.contains('dark')) {
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+        } else {
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+        }
+    })();
+</script>
+
+<!-- Article Modal -->
+<div id="article-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-[#181445]/60 dark:bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+    
+    <!-- Modal Box -->
+    <div class="relative bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl transition-all duration-300 transform scale-95 opacity-0 flex flex-col max-h-[85vh]" id="modal-box">
+        <!-- Header -->
+        <div class="p-lg border-b border-outline-variant dark:border-white/10 flex justify-between items-start">
+            <div>
+                <span class="inline-block text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2" id="modal-category">Loans</span>
+                <h3 class="font-page-title text-card-title md:text-section-head text-on-surface dark:text-white leading-tight" id="modal-title">Understanding Home Loan EMIs</h3>
+            </div>
+            <button class="text-on-surface-variant hover:text-primary dark:text-white/60 dark:hover:text-white p-1 rounded-full hover:bg-surface-container dark:hover:bg-white/10 transition-colors" onclick="closeModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <!-- Body (Scrollable) -->
+        <div class="p-lg overflow-y-auto space-y-md text-body-lg text-on-surface-variant dark:text-white/80 leading-relaxed" id="modal-content">
+            <!-- Article content will be inserted here -->
+        </div>
+        <!-- Footer -->
+        <div class="p-lg bg-surface-container-low dark:bg-[#16123a] border-t border-outline-variant dark:border-white/10 flex justify-between items-center text-xs text-outline dark:text-white/40">
+            <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">schedule</span> <span id="modal-read-time">8 min read</span>
+            </span>
+            <button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-semibold hover:bg-surface-tint active:scale-95 transition-all" onclick="closeModal()">
+                Got It, Thanks!
+            </button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

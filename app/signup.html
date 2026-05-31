@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<script>
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+    } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+    }
+</script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Account — FinSense AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Supabase SDK & Auth Helper -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-auth.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.FinSenseAuth) {
+            window.FinSenseAuth.checkAuthAndRedirect('guest');
+        }
+    });
+</script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7b7487",
+                        "on-surface": "#181445",
+                        "background": "#fcf8ff",
+                        "inverse-on-surface": "#f3eeff",
+                        "surface-container-low": "#f6f2ff",
+                        "surface-container": "#efebff",
+                        "on-primary-container": "#ede0ff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#ccc3d8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#001d35",
+                        "on-secondary-fixed": "#002114",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2d2a5b",
+                        "on-surface-variant": "#4a4455",
+                        "surface": "#fcf8ff",
+                        "tertiary-fixed-dim": "#adc9eb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "surface-container-high": "#e9e5ff",
+                        "on-tertiary-container": "#d6e7ff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "error-container": "#ffdad6",
+                        "secondary": "#006c4a",
+                        "surface-bright": "#fcf8ff",
+                        "on-primary-fixed": "#25005a",
+                        "surface-dim": "#dad6ff",
+                        "surface-variant": "#e3dfff",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#82f5c1",
+                        "surface-tint": "#732ee4",
+                        "primary-fixed": "#eaddff",
+                        "surface-container-highest": "#e3dfff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#d0e4ff",
+                        "tertiary": "#36516e",
+                        "on-secondary-container": "#00714e",
+                        "on-background": "#181445",
+                        "primary-container": "#7c3aed",
+                        "tertiary-container": "#4e6987",
+                        "secondary-fixed-dim": "#68dba9",
+                        "inverse-primary": "#d2bbff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#85f8c4",
+                        "on-tertiary-fixed-variant": "#2d4965",
+                        "primary": "#630ed4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "48px",
+                        "unit": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "container-margin": "24px",
+                        "sm": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "card-title": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "hero-title-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "page-title": ["Inter"],
+                        "page-title-mobile": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "section-head": ["Inter"],
+                        "hero-title": ["Inter"]
+                    },
+                    "fontSize": {
+                        "card-title": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "hero-title-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "page-title": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "page-title-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "section-head": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "hero-title": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(24, 20, 69, 0.7);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        input:focus {
+            outline: none;
+            border-color: #7c3aed !important;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background dark:bg-on-background text-on-surface dark:text-inverse-on-surface font-body-lg min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed transition-colors duration-300">
+<main class="flex min-h-screen">
+<!-- Left Panel: Brand Experience -->
+<section class="hidden lg:flex lg:w-1/2 relative bg-primary-container overflow-hidden items-center justify-center p-xl">
+<!-- Animated Background Elements -->
+<div class="absolute inset-0 z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary opacity-20 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary opacity-20 blur-[120px] rounded-full"></div>
+</div>
+<div class="relative z-10 max-w-md text-center">
+<div class="mb-lg inline-flex items-center justify-center p-md bg-surface-container-lowest rounded-xl shadow-xl">
+<img src="logo.png" alt="FinSense AI Logo" class="h-12 w-12 rounded-lg object-contain"/>
+</div>
+<h1 class="font-hero-title text-hero-title text-on-primary-container mb-md">Master your wealth with AI.</h1>
+<p class="font-body-lg text-body-lg text-on-primary-container opacity-80 mb-xl">Make smarter financial decisions with our real-time calculators and predictive insights.</p>
+</div>
+</section>
+<!-- Right Panel: Signup Form -->
+<section class="w-full lg:w-1/2 flex items-center justify-center p-container-margin bg-surface dark:bg-inverse-surface overflow-y-auto transition-colors duration-300">
+<div class="w-full max-w-md py-xl">
+<!-- Header -->
+<div class="mb-xl text-center lg:text-left">
+<h2 class="font-page-title text-page-title text-on-surface dark:text-inverse-on-surface mb-xs">Create your account</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant dark:text-outline-variant">Free forever. No credit card required.</p>
+</div>
+<!-- Google OAuth -->
+<button id="google-signup-btn" class="w-full h-[48px] flex items-center justify-center gap-md border border-outline-variant dark:border-white/15 bg-surface-container-lowest dark:bg-[#131130] hover:bg-surface-container hover:dark:bg-[#1b183a] transition-colors rounded-lg font-card-title text-on-surface dark:text-white mb-lg">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                    Continue with Google
+                </button>
+<div class="relative flex items-center mb-lg">
+<div class="flex-grow border-t border-outline-variant dark:border-white/10"></div>
+<span class="flex-shrink mx-md font-label-caps text-label-caps text-outline dark:text-outline-variant uppercase">or use email</span>
+<div class="flex-grow border-t border-outline-variant dark:border-white/10"></div>
+</div>
+<!-- Form -->
+<form class="space-y-md" onsubmit="return false">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant mb-xs ml-xs" for="name">FULL NAME</label>
+<input class="w-full h-[48px] px-md rounded-lg bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 text-on-surface dark:text-white placeholder:text-outline focus:border-primary transition-all" id="name" placeholder="John Doe" type="text"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant mb-xs ml-xs" for="email">EMAIL ADDRESS</label>
+<input class="w-full h-[48px] px-md rounded-lg bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 text-on-surface dark:text-white placeholder:text-outline focus:border-primary transition-all" id="email" placeholder="name@example.com" type="email"/>
+</div>
+<div class="relative">
+<label class="block font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant mb-xs ml-xs" for="password">PASSWORD</label>
+<input class="w-full h-[48px] px-md rounded-lg bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 text-on-surface dark:text-white placeholder:text-outline focus:border-primary transition-all pr-[48px]" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-md bottom-[12px] text-outline hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<!-- Password Strength Indicator -->
+<div class="mt-xs flex gap-xs h-[4px] px-xs">
+<div class="flex-1 rounded-full bg-outline-variant transition-colors" id="p-strength-1"></div>
+<div class="flex-1 rounded-full bg-outline-variant transition-colors" id="p-strength-2"></div>
+<div class="flex-1 rounded-full bg-outline-variant transition-colors" id="p-strength-3"></div>
+<div class="flex-1 rounded-full bg-outline-variant transition-colors" id="p-strength-4"></div>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant mb-xs ml-xs" for="confirm-password">CONFIRM PASSWORD</label>
+<input class="w-full h-[48px] px-md rounded-lg bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 text-on-surface dark:text-white placeholder:text-outline focus:border-primary transition-all" id="confirm-password" placeholder="••••••••" type="password"/>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-outline-variant/60 italic">
+                        By signing up, you agree this is not financial advice and you accept our Terms.
+                     </p>
+<button class="w-full h-[48px] bg-primary-container text-on-primary-container font-card-title rounded-lg shadow-lg hover:shadow-primary/20 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-md" id="signup-btn" type="submit">Sign Up</button>
+</form><div class="hidden mt-lg p-lg bg-secondary-container/20 border border-secondary/20 rounded-xl text-center" id="success-message"><span class="material-symbols-outlined text-secondary text-[48px] mb-md">mark_email_read</span><h3 class="font-section-head text-secondary mb-xs">Check your email</h3><p class="font-body-sm text-on-surface-variant">We've sent a verification link to your email address. Please click the link to activate your account.</p></div>
+<!-- Footer Link -->
+<div class="mt-xl text-center">
+<p class="font-body-lg text-body-lg text-on-surface-variant dark:text-outline-variant">
+                        Already have an account? 
+                        <a class="text-primary font-bold hover:underline" href="login.html">Sign In</a>
+</p>
+</div><footer class="mt-xl pt-lg border-t border-outline-variant dark:border-white/10 text-center"><div class="flex justify-center gap-md mb-md text-on-surface-variant dark:text-outline-variant text-sm"><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a><a class="hover:text-primary transition-colors" href="#">Terms of Service</a><a class="hover:text-primary transition-colors" href="#">Contact Support</a></div><p class="text-outline text-[12px]">© 2024 FinSense AI. All rights reserved.</p></footer>
+
+</div>
+</section>
+</main>
+<script>
+        // Password strength simulation
+        const pwd = document.getElementById('password');
+        const indicators = [
+            document.getElementById('p-strength-1'),
+            document.getElementById('p-strength-2'),
+            document.getElementById('p-strength-3'),
+            document.getElementById('p-strength-4')
+        ];
+
+        pwd.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const length = val.length;
+            
+            // Reset
+            indicators.forEach(i => i.className = 'flex-1 rounded-full bg-outline-variant transition-colors');
+            
+            if (length === 0) return;
+
+            if (length > 0) indicators[0].classList.replace('bg-outline-variant', 'bg-error');
+            if (length > 4) {
+                indicators[0].classList.replace('bg-error', 'bg-secondary-container');
+                indicators[1].classList.replace('bg-outline-variant', 'bg-secondary-container');
+            }
+            if (length > 8) {
+                indicators[2].classList.replace('bg-outline-variant', 'bg-secondary');
+            }
+            if (length > 12 && /[!@#$%^&*]/.test(val)) {
+                indicators[3].classList.replace('bg-outline-variant', 'bg-secondary');
+            }
+        });
+
+        // Form submission and redirect logic
+        document.getElementById('signup-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
+
+            if (!name || !email || !password || !confirmPassword) {
+                alert('Please fill out all fields.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match.');
+                return;
+            }
+
+            const btn = document.getElementById('signup-btn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin material-symbols-outlined mr-2">progress_activity</span>Creating Account...`;
+
+            try {
+                await window.FinSenseAuth.signUpWithEmail(email, password, name);
+                
+                // Hide form
+                document.querySelector('form').classList.add('hidden');
+                
+                // Show success block
+                const successMsg = document.getElementById('success-message');
+                successMsg.classList.remove('hidden');
+                
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 3000);
+            } catch (err) {
+                alert(err.message || "Failed to create account. Please try again.");
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+
+        // Google OAuth sign-up logic
+        const googleBtn = document.getElementById('google-signup-btn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    googleBtn.disabled = true;
+                    googleBtn.innerHTML = `<span class="animate-spin material-symbols-outlined mr-2">progress_activity</span>Connecting...`;
+                    await window.FinSenseAuth.signInWithGoogle();
+                } catch (err) {
+                    alert("Google Sign-Up failed: " + (err.message || err));
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = `Continue with Google`;
+                }
+            });
+        }
+
+        // Theme toggle logic matching login page
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                if (icon) icon.textContent = 'dark_mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                html.classList.remove('light');
+                if (icon) icon.textContent = 'light_mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Sync initial toggle icon
+        (function() {
+            const icon = document.getElementById('theme-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                if (icon) icon.textContent = 'light_mode';
+            } else {
+                if (icon) icon.textContent = 'dark_mode';
+            }
+        })();
+    </script>
+    
+    <!-- Theme Toggle Floating Action -->
+    <button class="fixed bottom-lg right-lg h-12 w-12 rounded-full bg-surface-container-highest dark:bg-[#1f1b4c] shadow-xl flex items-center justify-center text-primary dark:text-[#adc9eb] transition-all hover:scale-110 active:scale-95 z-50" onclick="toggleTheme()">
+        <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+    </button>
+</body></html>

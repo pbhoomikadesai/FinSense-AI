@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+    </script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Finance Calculators — FinSense AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Supabase SDK & Auth Helper -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-auth.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.FinSenseAuth) {
+                window.FinSenseAuth.checkAuthAndRedirect('protected');
+            }
+        });
+    </script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-tertiary-container": "#d6e7ff",
+                "tertiary": "#36516e",
+                "tertiary-fixed-dim": "#adc9eb",
+                "on-surface": "#181445",
+                "inverse-surface": "#2d2a5b",
+                "surface-container-low": "#f6f2ff",
+                "surface-container-highest": "#e3dfff",
+                "surface-container": "#efebff",
+                "primary-container": "#7c3aed",
+                "surface": "#fcf8ff",
+                "on-background": "#181445",
+                "on-tertiary": "#ffffff",
+                "on-surface-variant": "#4a4455",
+                "inverse-on-surface": "#f3eeff",
+                "outline-variant": "#ccc3d8",
+                "secondary-fixed": "#85f8c4",
+                "background": "#fcf8ff",
+                "primary-fixed-dim": "#d2bbff",
+                "tertiary-container": "#4e6987",
+                "surface-tint": "#732ee4",
+                "on-tertiary-fixed": "#001d35",
+                "tertiary-fixed": "#d0e4ff",
+                "surface-container-lowest": "#ffffff",
+                "secondary-fixed-dim": "#68dba9",
+                "outline": "#7b7487",
+                "on-tertiary-fixed-variant": "#2d4965",
+                "on-error-container": "#93000a",
+                "on-secondary-container": "#00714e",
+                "inverse-primary": "#d2bbff",
+                "error-container": "#ffdad6",
+                "secondary-container": "#82f5c1",
+                "surface-dim": "#dad6ff",
+                "error": "#ba1a1a",
+                "surface-container-high": "#e9e5ff",
+                "on-secondary-fixed": "#002114",
+                "surface-bright": "#fcf8ff",
+                "secondary": "#006c4a",
+                "on-error": "#ffffff",
+                "on-primary-container": "#ede0ff",
+                "on-primary": "#ffffff",
+                "on-secondary-fixed-variant": "#005137",
+                "on-secondary": "#ffffff",
+                "on-primary-fixed-variant": "#5a00c6",
+                "on-primary-fixed": "#25005a",
+                "primary-fixed": "#eaddff",
+                "primary": "#630ed4",
+                "surface-variant": "#e3dfff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "xl": "48px",
+                "unit": "4px",
+                "sm": "8px",
+                "gutter": "16px",
+                "container-margin": "24px",
+                "xs": "4px",
+                "lg": "24px",
+                "md": "16px"
+            },
+            "fontFamily": {
+                "section-head": ["Inter"],
+                "page-title": ["Inter"],
+                "page-title-mobile": ["Inter"],
+                "hero-title-mobile": ["Inter"],
+                "label-caps": ["Inter"],
+                "hero-title": ["Inter"],
+                "body-sm": ["Inter"],
+                "card-title": ["Inter"],
+                "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                "section-head": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                "page-title": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                "page-title-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                "card-title": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-tab { background-color: #630ed4 !important; color: #ffffff !important; }
+        input[type=range] { accent-color: #630ed4; }
+        body { scroll-behavior: smooth; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface dark:bg-[#131130] dark:text-[#f3eeff] font-body-lg overflow-x-hidden min-h-screen flex transition-colors duration-200">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col z-40 bg-surface-container-low dark:bg-[#0f0d26] border-r border-outline-variant dark:border-white/10 shadow-xl w-64 md:flex hidden">
+    <div class="px-container-margin py-xl flex items-center gap-sm">
+        <img src="logo.png" alt="FinSense AI Logo" class="h-8 w-8 rounded-lg object-contain shadow-sm"/>
+        <h1 class="text-card-title font-card-title text-primary dark:text-[#adc9eb]">FinSense AI</h1>
+    </div>
+    <nav class="flex-1 px-2 space-y-1">
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="index.html">
+            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            <span class="font-body-sm text-body-sm">Dashboard</span>
+        </a>
+        <a class="bg-primary-container text-on-primary-container dark:bg-[#630ed4] dark:text-[#ede0ff] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 active:scale-[0.98]" href="calculators.html">
+            <span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+            <span class="font-body-sm text-body-sm">Calculators</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" href="knowledge.html">
+            <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+            <span class="font-body-sm text-body-sm">Knowledge</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" href="#">
+            <span class="material-symbols-outlined" data-icon="history">history</span>
+            <span class="font-body-sm text-body-sm">History</span>
+        </a>
+    </nav>
+    <div class="mt-auto p-container-margin border-t border-outline-variant dark:border-white/10 space-y-1">
+        <div class="flex items-center gap-3 px-2 py-3 mb-2">
+            <div data-auth-initials class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">GU</div>
+            <div>
+                <p data-auth-name class="font-body-sm text-body-sm font-bold text-on-surface dark:text-white leading-none">Guest User</p>
+                <p data-auth-email class="text-[10px] text-on-surface-variant dark:text-white/60">guest@finsense.ai</p>
+            </div>
+        </div>
+        <button class="w-full text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="toggleTheme()">
+            <span class="material-symbols-outlined" id="theme-toggle-icon">dark_mode</span>
+            <span class="font-body-sm" id="theme-toggle-text">Dark Mode</span>
+        </button>
+        <button class="w-full text-left text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="window.FinSenseAuth.signOut()">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="font-body-sm">Sign Out</span>
+        </button>
+    </div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-container-margin transition-all duration-300">
+    <!-- Header & Tab Navigation -->
+    <header class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+        <div>
+            <h2 class="font-page-title text-page-title text-on-surface dark:text-white">Finance Calculators</h2>
+            <p class="text-on-surface-variant dark:text-white/60 font-body-lg">Precision tools powered by smart intelligence.</p>
+        </div>
+        <div class="flex bg-surface-container dark:bg-[#1f1b4c] p-1 rounded-xl shadow-sm border dark:border-white/10">
+            <button class="tab-btn px-4 py-2 rounded-lg font-body-sm text-body-sm active-tab flex items-center gap-2 transition-all" id="tab-btn-emi" onclick="switchTab('emi')">
+                <span class="material-symbols-outlined text-[18px]" data-icon="home">home</span> EMI
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg font-body-sm text-body-sm text-on-surface-variant dark:text-white/70 hover:bg-surface-container-high dark:hover:bg-white/10 flex items-center gap-2 transition-all" id="tab-btn-sip" onclick="switchTab('sip')">
+                <span class="material-symbols-outlined text-[18px]" data-icon="trending_up">trending_up</span> SIP
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg font-body-sm text-body-sm text-on-surface-variant dark:text-white/70 hover:bg-surface-container-high dark:hover:bg-white/10 flex items-center gap-2 transition-all" id="tab-btn-fd" onclick="switchTab('fd')">
+                <span class="material-symbols-outlined text-[18px]" data-icon="account_balance">account_balance</span> FD
+            </button>
+        </div>
+    </header>
+    <!-- Tab 1: EMI Calculator -->
+    <section class="calculator-tab grid grid-cols-1 lg:grid-cols-12 gap-xl" id="tab-emi">
+        <!-- Inputs -->
+        <div class="lg:col-span-5 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <h3 class="font-card-title text-card-title mb-lg">Loan Details</h3>
+                <div class="space-y-gutter">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Loan Amount (₹)</label>
+                            <input class="w-32 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="emi-amt-input" type="number" value="5000000"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="emi-amt-range" max="50000000" min="100000" step="50000" type="range" value="5000000"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Interest Rate (% p.a)</label>
+                            <input class="w-20 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="emi-rate-input" type="number" step="0.1" value="8.5"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="emi-rate-range" max="20" min="5" step="0.1" type="range" value="8.5"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Tenure (Years)</label>
+                            <input class="w-16 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="emi-tenure-input" type="number" value="20"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="emi-tenure-range" max="30" min="1" step="1" type="range" value="20"/>
+                    </div>
+                </div>
+            </div>
+            <a href="index.html" class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-4 rounded-xl font-bold hover:shadow-lg active:scale-[0.95] transition-all">
+                <span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+                Ask AI about this loan
+            </a>
+        </div>
+        <!-- Outputs -->
+        <div class="lg:col-span-7 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] flex flex-col items-center">
+                <p class="text-on-surface-variant dark:text-white/60 font-label-caps text-label-caps uppercase tracking-widest mb-2">Estimated Monthly EMI</p>
+                <h2 class="text-hero-title font-hero-title text-primary dark:text-[#adc9eb] mb-lg">₹<span id="emi-result-monthly">43,391</span></h2>
+                <div class="grid grid-cols-3 gap-md w-full">
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg text-center border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">PRINCIPAL</p>
+                        <p class="text-body-lg font-bold">₹<span id="emi-res-principal">50L</span></p>
+                    </div>
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg text-center border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">TOTAL INTEREST</p>
+                        <p class="text-body-lg font-bold">₹<span id="emi-res-interest">54.1L</span></p>
+                    </div>
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg text-center border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">TOTAL PAYABLE</p>
+                        <p class="text-body-lg font-bold">₹<span id="emi-res-total">1.04Cr</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Tab 2: SIP Calculator -->
+    <section class="calculator-tab hidden grid grid-cols-1 lg:grid-cols-12 gap-xl" id="tab-sip">
+        <div class="lg:col-span-5 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <h3 class="font-card-title text-card-title mb-lg">Investment Plan</h3>
+                <div class="space-y-gutter">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Monthly Investment (₹)</label>
+                            <input class="w-24 text-right font-bold text-secondary dark:text-[#82f5c1] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-secondary focus:border-secondary outline-none" id="sip-amt-input" type="number" value="10000"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="sip-amt-range" max="100000" min="500" step="500" type="range" value="10000"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Expected Return (% p.a)</label>
+                            <input class="w-16 text-right font-bold text-secondary dark:text-[#82f5c1] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-secondary focus:border-secondary outline-none" id="sip-rate-input" type="number" value="12"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="sip-rate-range" max="30" min="1" step="1" type="range" value="12"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Time Period (Years)</label>
+                            <input class="w-16 text-right font-bold text-secondary dark:text-[#82f5c1] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-secondary focus:border-secondary outline-none" id="sip-tenure-input" type="number" value="10"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="sip-tenure-range" max="40" min="1" step="1" type="range" value="10"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-7 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <p class="text-on-surface-variant dark:text-white/60 font-label-caps text-label-caps uppercase tracking-widest mb-2">Estimated Maturity Wealth</p>
+                <h2 class="text-hero-title font-hero-title text-secondary dark:text-[#82f5c1] mb-lg">₹<span id="sip-result-total">23,23,391</span></h2>
+                <div class="grid grid-cols-2 gap-md mb-xl">
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">TOTAL INVESTED</p>
+                        <p class="text-body-lg font-bold">₹<span id="sip-res-invested">12L</span></p>
+                    </div>
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">EST. RETURNS</p>
+                        <p class="text-body-lg font-bold text-secondary dark:text-[#82f5c1]">₹<span id="sip-res-returns">11.2L</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Tab 3: FD Calculator -->
+    <section class="calculator-tab hidden grid grid-cols-1 lg:grid-cols-12 gap-xl" id="tab-fd">
+        <div class="lg:col-span-5 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <h3 class="font-card-title text-card-title mb-lg">FD Investment</h3>
+                <div class="space-y-gutter">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Deposit Amount (₹)</label>
+                            <input class="w-28 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="fd-amt-input" type="number" value="200000"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="fd-amt-range" max="10000000" min="10000" step="10000" type="range" value="200000"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Interest Rate (% p.a)</label>
+                            <input class="w-16 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="fd-rate-input" type="number" step="0.1" value="7.1"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="fd-rate-range" max="12" min="1" step="0.1" type="range" value="7.1"/>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-body-sm font-semibold">Time Period (Years)</label>
+                            <input class="w-16 text-right font-bold text-primary dark:text-[#adc9eb] bg-surface dark:bg-[#2b2564] border border-outline-variant dark:border-white/10 rounded px-2 py-0.5 focus:ring-1 focus:ring-primary focus:border-primary outline-none" id="fd-tenure-input" type="number" value="5"/>
+                        </div>
+                        <input class="w-full h-2 bg-surface-container dark:bg-white/20 rounded-lg appearance-none cursor-pointer" id="fd-tenure-range" max="25" min="1" step="1" type="range" value="5"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-7 space-y-lg">
+            <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border dark:border-white/10 p-lg rounded-xl shadow-[0_4px_20px_rgba(124,58,237,0.08)]">
+                <p class="text-on-surface-variant dark:text-white/60 font-label-caps text-label-caps uppercase tracking-widest mb-2">Estimated Maturity Value</p>
+                <h2 class="text-hero-title font-hero-title text-primary dark:text-[#adc9eb] mb-lg">₹<span id="fd-result-total">2,84,321</span></h2>
+                <div class="grid grid-cols-2 gap-md mb-xl">
+                    <div class="bg-surface dark:bg-[#2b2564] p-md rounded-lg border border-outline-variant dark:border-white/10">
+                        <p class="text-[10px] text-on-surface-variant dark:text-white/40 font-bold">TOTAL INTEREST</p>
+                        <p class="text-body-lg font-bold">₹<span id="fd-res-interest">84.3K</span></p>
+                    </div>
+                    <div class="bg-secondary-container dark:bg-[#003824] p-md rounded-lg border border-secondary text-on-secondary-container dark:text-[#a3f4cd]">
+                        <p class="text-[10px] font-bold">EFFECTIVE YIELD</p>
+                        <p class="text-body-lg font-bold">8.4%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<script>
+    // Tab switching logic
+    function switchTab(tabId) {
+        document.querySelectorAll('.calculator-tab').forEach(tab => tab.classList.add('hidden'));
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-tab');
+            btn.classList.add('text-on-surface-variant', 'dark:text-white/70');
+        });
+        document.getElementById('tab-btn-' + tabId).classList.add('active-tab');
+        document.getElementById('tab-btn-' + tabId).classList.remove('text-on-surface-variant', 'dark:text-white/70');
+    }
+
+    const formatINR = (val) => new Intl.NumberFormat('en-IN').format(val);
+
+    // DUAL-BINDING CORE LOGIC
+
+    // 1. EMI
+    const emiAmtRange = document.getElementById('emi-amt-range');
+    const emiAmtInput = document.getElementById('emi-amt-input');
+    const emiRateRange = document.getElementById('emi-rate-range');
+    const emiRateInput = document.getElementById('emi-rate-input');
+    const emiTenureRange = document.getElementById('emi-tenure-range');
+    const emiTenureInput = document.getElementById('emi-tenure-input');
+
+    function syncEMI(source) {
+        if (source === 'range') {
+            emiAmtInput.value = emiAmtRange.value;
+            emiRateInput.value = emiRateRange.value;
+            emiTenureInput.value = emiTenureRange.value;
+        } else {
+            emiAmtRange.value = emiAmtInput.value;
+            emiRateRange.value = emiRateInput.value;
+            emiTenureRange.value = emiTenureInput.value;
+        }
+        updateEMI();
+    }
+
+    function updateEMI() {
+        const P = parseFloat(emiAmtRange.value) || 0;
+        const R = (parseFloat(emiRateRange.value) || 0) / 12 / 100;
+        const N = (parseFloat(emiTenureRange.value) || 0) * 12;
+
+        const emi = R === 0 ? (N > 0 ? P / N : 0) : (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+        const totalPayable = emi * N;
+        const totalInterest = totalPayable - P;
+
+        document.getElementById('emi-result-monthly').innerText = formatINR(Math.round(emi));
+        document.getElementById('emi-res-principal').innerText = (P / 100000).toFixed(1) + 'L';
+        document.getElementById('emi-res-interest').innerText = (totalInterest / 100000).toFixed(1) + 'L';
+        document.getElementById('emi-res-total').innerText = totalPayable > 10000000 ? (totalPayable / 10000000).toFixed(2) + 'Cr' : (totalPayable / 100000).toFixed(1) + 'L';
+    }
+
+    // 2. SIP
+    const sipAmtRange = document.getElementById('sip-amt-range');
+    const sipAmtInput = document.getElementById('sip-amt-input');
+    const sipRateRange = document.getElementById('sip-rate-range');
+    const sipRateInput = document.getElementById('sip-rate-input');
+    const sipTenureRange = document.getElementById('sip-tenure-range');
+    const sipTenureInput = document.getElementById('sip-tenure-input');
+
+    function syncSIP(source) {
+        if (source === 'range') {
+            sipAmtInput.value = sipAmtRange.value;
+            sipRateInput.value = sipRateRange.value;
+            sipTenureInput.value = sipTenureRange.value;
+        } else {
+            sipAmtRange.value = sipAmtInput.value;
+            sipRateRange.value = sipRateInput.value;
+            sipTenureRange.value = sipTenureInput.value;
+        }
+        updateSIP();
+    }
+
+    function updateSIP() {
+        const P = parseFloat(sipAmtRange.value) || 0;
+        const i = (parseFloat(sipRateRange.value) || 0) / 100 / 12;
+        const n = (parseFloat(sipTenureRange.value) || 0) * 12;
+
+        const FV = i === 0 ? P * n : P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+        const totalInvested = P * n;
+        const returns = FV - totalInvested;
+
+        document.getElementById('sip-result-total').innerText = formatINR(Math.round(FV));
+        document.getElementById('sip-res-invested').innerText = (totalInvested / 100000).toFixed(1) + 'L';
+        document.getElementById('sip-res-returns').innerText = (returns / 100000).toFixed(1) + 'L';
+    }
+
+    // 3. FD
+    const fdAmtRange = document.getElementById('fd-amt-range');
+    const fdAmtInput = document.getElementById('fd-amt-input');
+    const fdRateRange = document.getElementById('fd-rate-range');
+    const fdRateInput = document.getElementById('fd-rate-input');
+    const fdTenureRange = document.getElementById('fd-tenure-range');
+    const fdTenureInput = document.getElementById('fd-tenure-input');
+
+    function syncFD(source) {
+        if (source === 'range') {
+            fdAmtInput.value = fdAmtRange.value;
+            fdRateInput.value = fdRateRange.value;
+            fdTenureInput.value = fdTenureRange.value;
+        } else {
+            fdAmtRange.value = fdAmtInput.value;
+            fdRateRange.value = fdRateInput.value;
+            fdTenureRange.value = fdTenureInput.value;
+        }
+        updateFD();
+    }
+
+    function updateFD() {
+        const P = parseFloat(fdAmtRange.value) || 0;
+        const r = (parseFloat(fdRateRange.value) || 0) / 100;
+        const t = parseFloat(fdTenureRange.value) || 0;
+        const n = 4; // Quarterly
+
+        const total = P * Math.pow(1 + r/n, n*t);
+        const interest = total - P;
+
+        document.getElementById('fd-result-total').innerText = formatINR(Math.round(total));
+        document.getElementById('fd-res-interest').innerText = interest > 100000 ? (interest / 100000).toFixed(1) + 'L' : (interest / 1000).toFixed(1) + 'K';
+    }
+
+    // Event Listeners
+    [emiAmtRange, emiRateRange, emiTenureRange].forEach(input => input.addEventListener('input', () => syncEMI('range')));
+    [emiAmtInput, emiRateInput, emiTenureInput].forEach(input => input.addEventListener('input', () => syncEMI('input')));
+    
+    [sipAmtRange, sipRateRange, sipTenureRange].forEach(input => input.addEventListener('input', () => syncSIP('range')));
+    [sipAmtInput, sipRateInput, sipTenureInput].forEach(input => input.addEventListener('input', () => syncSIP('input')));
+
+    [fdAmtRange, fdRateRange, fdTenureRange].forEach(input => input.addEventListener('input', () => syncFD('range')));
+    [fdAmtInput, fdRateInput, fdTenureInput].forEach(input => syncFD('input'));
+    [fdAmtInput, fdRateInput, fdTenureInput].forEach(input => input.addEventListener('input', () => syncFD('input')));
+
+    // Run initial calculations
+    updateEMI();
+    updateSIP();
+    updateFD();
+
+    // Theme Toggle Functionality
+    function toggleTheme() {
+        const html = document.documentElement;
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Sync initial state of toggle text and icon in sidebar
+    (function() {
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (document.documentElement.classList.contains('dark')) {
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+        } else {
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+        }
+    })();
+</script>
+</body>
+</html>

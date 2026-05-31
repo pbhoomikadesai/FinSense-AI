@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinSense AI — Smart Finance for India</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Supabase SDK & Auth Helper -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-auth.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.FinSenseAuth) {
+            window.FinSenseAuth.checkAuthAndRedirect('guest');
+        }
+    });
+</script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#7b7487",
+                    "on-surface": "#181445",
+                    "background": "#fcf8ff",
+                    "inverse-on-surface": "#f3eeff",
+                    "surface-container-low": "#f6f2ff",
+                    "surface-container": "#efebff",
+                    "on-primary-container": "#ede0ff",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#ccc3d8",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#001d35",
+                    "on-secondary-fixed": "#002114",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2d2a5b",
+                    "on-surface-variant": "#4a4455",
+                    "surface": "#fcf8ff",
+                    "tertiary-fixed-dim": "#adc9eb",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "surface-container-high": "#e9e5ff",
+                    "on-tertiary-container": "#d6e7ff",
+                    "on-secondary-fixed-variant": "#005137",
+                    "error-container": "#ffdad6",
+                    "secondary": "#006c4a",
+                    "surface-bright": "#fcf8ff",
+                    "on-primary-fixed": "#25005a",
+                    "surface-dim": "#dad6ff",
+                    "surface-variant": "#e3dfff",
+                    "on-error-container": "#93000a",
+                    "secondary-container": "#82f5c1",
+                    "surface-tint": "#732ee4",
+                    "primary-fixed": "#eaddff",
+                    "surface-container-highest": "#e3dfff",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#d0e4ff",
+                    "tertiary": "#36516e",
+                    "on-secondary-container": "#00714e",
+                    "on-background": "#181445",
+                    "primary-container": "#7c3aed",
+                    "tertiary-container": "#4e6987",
+                    "secondary-fixed-dim": "#68dba9",
+                    "inverse-primary": "#d2bbff",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#85f8c4",
+                    "on-tertiary-fixed-variant": "#2d4965",
+                    "primary": "#630ed4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "48px",
+                    "unit": "4px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "container-margin": "24px",
+                    "sm": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "card-title": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "hero-title-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "page-title": ["Inter"],
+                    "page-title-mobile": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "section-head": ["Inter"],
+                    "hero-title": ["Inter"]
+            },
+            "fontSize": {
+                    "card-title": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "hero-title-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "page-title": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "page-title-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "section-head": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "hero-title": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .dark .glass-card {
+        background: rgba(45, 42, 91, 0.7);
+      }
+      .hero-gradient {
+        background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.15), transparent),
+                    radial-gradient(circle at bottom left, rgba(0, 108, 74, 0.05), transparent);
+      }
+      body {
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+    </style>
+</head>
+<body class="bg-background dark:bg-[#131130] text-on-surface dark:text-[#f3eeff]">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-[#0f0d26] shadow-sm fixed top-0 w-full z-50 border-b border-outline-variant/30 dark:border-white/10">
+<div class="flex justify-between items-center px-container-margin py-md w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-sm cursor-pointer" onclick="window.location.reload()">
+<img src="logo.png" alt="FinSense AI Logo" class="h-8 w-8 rounded-lg object-contain shadow-sm"/>
+<span class="text-page-title-mobile font-page-title-mobile text-primary dark:text-[#adc9eb] tracking-tight">FinSense AI</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="text-on-surface-variant dark:text-white/70 hover:text-primary dark:hover:text-[#adc9eb] transition-colors duration-200 font-body-lg text-body-lg" href="calculators.html">Calculators</a>
+<a class="text-on-surface-variant dark:text-white/70 hover:text-primary dark:hover:text-[#adc9eb] transition-colors duration-200 font-body-lg text-body-lg" href="knowledge.html">Learn</a>
+<a class="text-on-surface-variant dark:text-white/70 hover:text-primary dark:hover:text-[#adc9eb] transition-colors duration-200 font-body-lg text-body-lg" href="#value-props">About</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-white/10 transition-colors" id="theme-toggle">
+<span class="material-symbols-outlined text-primary dark:text-[#adc9eb]" id="theme-icon">light_mode</span>
+</button>
+<button class="hidden sm:block text-on-surface-variant dark:text-white/80 hover:text-primary dark:hover:text-[#adc9eb] transition-colors duration-200 active:scale-95" onclick="window.location.href='login.html'">Sign In</button>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-bold shadow-lg hover:bg-primary-container transition-all active:scale-95" onclick="window.location.href='signup.html'">Get Started</button>
+</div>
+</div>
+</nav>
+<main class="pt-24 overflow-x-hidden">
+<!-- Hero Section -->
+<section class="relative px-container-margin py-xl lg:py-48 hero-gradient">
+<div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-xl">
+<div class="lg:w-1/2 text-center lg:text-left z-10">
+<h1 class="font-hero-title text-hero-title-mobile md:text-hero-title text-on-surface dark:text-white leading-tight mb-md">
+                        Smart finance answers, <br class="hidden md:block"/>
+<span class="text-primary dark:text-[#adc9eb]">built for India</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant dark:text-white/70 mb-xl max-w-xl mx-auto lg:mx-0">
+                        Navigate the complexities of GST, Indian tax regimes, and RBI regulations with our specialized financial AI. Real-time insights for your unique Indian context.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-md justify-center lg:justify-start">
+<button class="bg-primary text-on-primary h-[56px] px-xl rounded-xl font-bold text-body-lg flex items-center justify-center gap-sm hover:shadow-xl transition-all active:scale-[0.98]" onclick="window.location.href='signup.html'">
+                            Get Started 
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="lg:w-1/2 relative">
+<!-- Glassmorphism Mockup Element -->
+<div class="glass-card p-xl rounded-xl shadow-[0_24px_48px_rgba(124,58,237,0.12)] border border-white/40 dark:border-white/10 cursor-pointer" onclick="window.location.href='login.html'">
+<div class="flex items-center gap-md mb-lg">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">psychology</span>
+</div>
+<div>
+<h4 class="font-card-title text-card-title text-on-surface dark:text-white">FinSense AI Analyst</h4>
+<p class="text-xs text-on-surface-variant dark:text-white/60">Live from Mumbai • Trading Active</p>
+</div>
+</div>
+<div class="bg-background/50 dark:bg-[#131130]/50 p-md rounded-lg mb-md border border-outline-variant/30 dark:border-white/10">
+<p class="font-body-sm text-body-sm text-on-surface dark:text-white/90">"Based on the new 2024 tax regime, you'll save approx. ₹42,000 annually given your HRA components and investment profile."</p>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-secondary-container/20 p-sm rounded-lg flex flex-col gap-xs">
+<span class="text-label-caps font-label-caps text-secondary dark:text-[#82f5c1]">REPO RATE</span>
+<span class="text-card-title font-card-title text-on-secondary-container dark:text-white">6.50%</span>
+</div>
+<div class="bg-primary-container/20 p-sm rounded-lg flex flex-col gap-xs">
+<span class="text-label-caps font-label-caps text-primary dark:text-[#adc9eb]">GST UPDATE</span>
+<span class="text-card-title font-card-title text-on-primary-container dark:text-white">v2.8 Active</span>
+</div>
+</div>
+</div>
+<!-- Decorative shapes -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full -z-10"></div>
+<div class="absolute -bottom-10 -left-10 w-48 h-48 bg-secondary/10 blur-3xl rounded-full -z-10"></div>
+</div>
+</div>
+</section>
+<!-- Trust Signals / Queries -->
+<section class="px-container-margin py-xl bg-surface-container-lowest dark:bg-[#18153c]">
+<div class="max-w-7xl mx-auto">
+<div class="text-center mb-xl">
+<span class="text-label-caps font-label-caps text-primary dark:text-[#adc9eb] mb-sm block">INTELLIGENT QUERIES</span>
+<h2 class="font-section-head text-section-head text-on-surface dark:text-white mb-md">Ask anything about Indian Finance</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-surface dark:bg-[#131130] p-lg rounded-xl shadow-sm border border-outline-variant/20 dark:border-white/10 hover:shadow-md transition-shadow cursor-pointer group" onclick="window.location.href='login.html'">
+<span class="material-symbols-outlined text-primary dark:text-[#adc9eb] mb-md group-hover:scale-110 transition-transform">home_work</span>
+<p class="font-card-title text-card-title text-on-surface dark:text-white mb-sm">"How do I save for my first home in Bangalore?"</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60">Personalized roadmap factoring in local real estate trends and home loan rates.</p>
+</div>
+<div class="bg-surface dark:bg-[#131130] p-lg rounded-xl shadow-sm border border-outline-variant/20 dark:border-white/10 hover:shadow-md transition-shadow cursor-pointer group" onclick="window.location.href='login.html'">
+<span class="material-symbols-outlined text-secondary dark:text-[#82f5c1] mb-md group-hover:scale-110 transition-transform">receipt_long</span>
+<p class="font-card-title text-card-title text-on-surface dark:text-white mb-sm">"Explain the new tax regime vs old for ₹15L salary."</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60">Side-by-side comparison with breakdown of deductions and net take-home.</p>
+</div>
+<div class="bg-surface dark:bg-[#131130] p-lg rounded-xl shadow-sm border border-outline-variant/20 dark:border-white/10 hover:shadow-md transition-shadow cursor-pointer group" onclick="window.location.href='login.html'">
+<span class="material-symbols-outlined text-tertiary dark:text-[#adc9eb] mb-md group-hover:scale-110 transition-transform">trending_up</span>
+<p class="font-card-title text-card-title text-on-surface dark:text-white mb-sm">"Which ELSS funds performed best in the last 3 years?"</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/60">Live performance data from Indian markets with risk-to-reward ratios.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Value Props -->
+<section class="px-container-margin py-xl bg-background dark:bg-[#131130]" id="value-props">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-[200px]">
+<!-- Live RBI Data -->
+<div class="md:col-span-8 md:row-span-2 bg-[#0f0d26] rounded-xl p-xl flex flex-col justify-end relative overflow-hidden group cursor-pointer" onclick="window.location.href='login.html'">
+<img alt="RBI Data" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" src="rbi_market_feed.png"/>
+<div class="relative z-10">
+<div class="bg-secondary text-white text-[10px] font-bold px-sm py-xs rounded-full w-fit mb-sm">LIVE FEED</div>
+<h3 class="font-section-head text-section-head text-white mb-sm">Direct RBI &amp; Market API Integration</h3>
+<p class="font-body-lg text-body-lg text-white/80 max-w-md">Our AI stays updated with the latest repo rates, inflation data, and regulatory shifts from the Reserve Bank of India every second.</p>
+</div>
+</div>
+<!-- Calculators -->
+<div class="md:col-span-4 md:row-span-1 bg-[#1a1642] text-white rounded-xl p-lg flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-4px] transition-all duration-300 cursor-pointer" onclick="window.location.href='calculators.html'">
+<img src="calculator_bento.png" alt="Calculators" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition-transform duration-500"/>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-[40px] text-[#adc9eb] block mb-sm" style="font-variation-settings: 'wght' 200;">calculate</span>
+</div>
+<div class="relative z-10">
+<h4 class="font-card-title text-card-title mb-xs">Advanced Calculators</h4>
+<p class="font-body-sm text-body-sm opacity-80">EMI, SIP, Lumpsum, &amp; Income Tax.</p>
+</div>
+</div>
+<!-- History -->
+<div class="md:col-span-4 md:row-span-1 bg-[#0f0d26] text-white rounded-xl p-lg border border-white/10 flex flex-col justify-between relative overflow-hidden group hover:translate-y-[-4px] transition-all duration-300 cursor-pointer" onclick="window.location.href='login.html'">
+<img src="history_bento.png" alt="History" class="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition-transform duration-500"/>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-[40px] text-[#82f5c1] block mb-sm" style="font-variation-settings: 'wght' 200;">history</span>
+</div>
+<div class="relative z-10">
+<h4 class="font-card-title text-card-title mb-xs">Personalized History</h4>
+<p class="font-body-sm text-body-sm opacity-80">Your financial queries, remembered.</p>
+</div>
+</div>
+
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<!-- Footer -->
+<footer class="w-full py-xl px-container-margin flex flex-col items-center gap-md text-center bg-surface-container-lowest dark:bg-[#0f0d26] border-t border-outline-variant dark:border-white/10">
+<div class="max-w-7xl mx-auto w-full">
+<div class="mb-lg">
+<span class="text-label-caps font-label-caps text-outline dark:text-white/40" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">FINSENSE AI</span>
+</div>
+<div class="flex flex-wrap justify-center gap-xl mb-xl">
+<a class="text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors font-body-sm text-body-sm" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors font-body-sm text-body-sm" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors font-body-sm text-body-sm" href="mailto:support@finsense.ai">Contact</a>
+<a class="text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors font-body-sm text-body-sm" href="#">Disclosure</a>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-white/40 max-w-2xl mx-auto">% 2024 FinSense AI. All rights reserved. FinSense AI is not a SEBI-registered financial advisor. Content for educational purposes only.</p>
+</div>
+</footer>
+<script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const html = document.documentElement;
+
+        themeToggle.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                themeIcon.textContent = 'dark_mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                html.classList.remove('light');
+                themeIcon.textContent = 'light_mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Initial Theme Load
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            themeIcon.textContent = 'light_mode';
+        } else {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            themeIcon.textContent = 'dark_mode';
+        }
+
+        // Add smooth entrance animations to cards
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.grid > div').forEach(card => {
+            card.classList.add('transition-all', 'duration-500', 'opacity-0', 'translate-y-8');
+            observer.observe(card);
+        });
+    </script>
+</body></html>

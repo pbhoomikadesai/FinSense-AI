@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+    </script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Ask FinSense — AI Finance Assistant</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Supabase SDK & Auth Helper -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-auth.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.FinSenseAuth) {
+                window.FinSenseAuth.checkAuthAndRedirect('protected').then(() => {
+                    if (typeof loadQueryHistory === 'function') {
+                        loadQueryHistory();
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-sidebar {
+            backdrop-filter: blur(8px);
+        }
+        .violet-pulse {
+            animation: pulse-violet 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-violet {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .7; transform: scale(0.98); }
+        }
+        .indeterminate-progress {
+            width: 100%;
+            height: 4px;
+            background-color: #eaddff;
+            position: relative;
+            overflow: hidden;
+        }
+        .indeterminate-progress::after {
+            content: "";
+            position: absolute;
+            background-color: #630ed4;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 30%;
+            animation: slide 1.5s infinite linear;
+        }
+        @keyframes slide {
+            0% { left: -30%; }
+            100% { left: 100%; }
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .response-entrance {
+            animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .violet-pulse, .indeterminate-progress::after, .response-entrance {
+                animation: none !important;
+                transition: none !important;
+            }
+            .response-entrance { opacity: 1; transform: none; }
+        }
+        .loading-card-pulse {
+            animation: card-glow 2s infinite ease-in-out;
+        }
+        @keyframes card-glow {
+            0%, 100% { box-shadow: 0 4px 24px rgba(124,58,237,0.08); }
+            50% { box-shadow: 0 4px 32px rgba(124,58,237,0.25); }
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#eaddff",
+                      "on-secondary-container": "#00714e",
+                      "primary-fixed-dim": "#d2bbff",
+                      "on-tertiary-fixed": "#001d35",
+                      "on-tertiary-container": "#d6e7ff",
+                      "secondary-container": "#82f5c1",
+                      "outline": "#7b7487",
+                      "surface-tint": "#732ee4",
+                      "on-primary-fixed": "#25005a",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#2d2a5b",
+                      "on-secondary-fixed-variant": "#005137",
+                      "on-background": "#181445",
+                      "inverse-on-surface": "#f3eeff",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#ccc3d8",
+                      "on-tertiary": "#ffffff",
+                      "on-surface": "#181445",
+                      "surface-container-high": "#e9e5ff",
+                      "secondary": "#006c4a",
+                      "tertiary-fixed-dim": "#adc9eb",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "surface": "#fcf8ff",
+                      "surface-dim": "#dad6ff",
+                      "tertiary-fixed": "#d0e4ff",
+                      "tertiary": "#36516e",
+                      "surface-variant": "#e3dfff",
+                      "surface-container": "#efebff",
+                      "background": "#fcf8ff",
+                      "primary": "#630ed4",
+                      "tertiary-container": "#4e6987",
+                      "secondary-fixed": "#85f8c4",
+                      "inverse-primary": "#d2bbff",
+                      "on-primary-fixed-variant": "#5a00c6",
+                      "on-tertiary-fixed-variant": "#2d4965",
+                      "surface-container-highest": "#e3dfff",
+                      "primary-container": "#7c3aed",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f6f2ff",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fcf8ff",
+                      "on-surface-variant": "#4a4455",
+                      "on-primary-container": "#ede0ff",
+                      "secondary-fixed-dim": "#68dba9",
+                      "on-secondary-fixed": "#002114"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "48px",
+                      "gutter": "16px",
+                      "unit": "4px",
+                      "container-margin": "24px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "section-head": ["Inter"],
+                      "hero-title": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "hero-title-mobile": ["Inter"],
+                      "page-title-mobile": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "card-title": ["Inter"],
+                      "page-title": ["Inter"]
+              },
+              "fontSize": {
+                      "section-head": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "hero-title": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "hero-title-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "page-title-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "card-title": ["18px", {"lineHeight": "1.5", "fontWeight": "600"}],
+                      "page-title": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface dark:bg-[#131130] dark:text-[#f3eeff] font-body-lg min-h-screen flex transition-colors duration-200">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col z-40 bg-surface-container-low dark:bg-[#0f0d26] border-r border-outline-variant dark:border-white/10 shadow-xl w-64 md:flex hidden">
+    <div class="px-lg py-xl flex items-center gap-sm">
+        <img src="logo.png" alt="FinSense AI Logo" class="h-8 w-8 rounded-lg object-contain shadow-sm"/>
+        <h1 class="text-card-title font-card-title text-primary dark:text-[#adc9eb]">FinSense AI</h1>
+    </div>
+    <nav class="flex-1 space-y-1 overflow-y-auto hide-scrollbar px-2">
+        <a class="bg-primary-container text-on-primary-container dark:bg-[#630ed4] dark:text-[#ede0ff] rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 active:scale-[0.98] transition-transform duration-200" href="index.html">
+            <span class="material-symbols-outlined" data-weight="fill">dashboard</span>
+            <span class="font-body-sm">Dashboard</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="calculators.html">
+            <span class="material-symbols-outlined">calculate</span>
+            <span class="font-body-sm">Calculators</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="knowledge.html">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span class="font-body-sm">Knowledge</span>
+        </a>
+        <a class="text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg transition-all active:scale-[0.98]" href="#">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-body-sm">History</span>
+        </a>
+        <div class="mt-xl px-4 py-2">
+            <p class="text-label-caps font-label-caps text-outline dark:text-white/40 mb-2">RECENT QUERIES</p>
+            <div class="space-y-2 text-xs" id="history-sidebar">
+                <div class="text-outline dark:text-white/30 italic px-2">No queries yet. Ask your first question!</div>
+            </div>
+        </div>
+    </nav>
+    <div class="mt-auto border-t border-outline-variant dark:border-white/10 p-4 space-y-1">
+        <div class="flex items-center gap-3 px-2 py-3 mb-2">
+            <div data-auth-initials class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">GU</div>
+            <div class="flex flex-col">
+                <span data-auth-name class="text-body-sm font-semibold text-on-surface dark:text-white leading-none">Guest User</span>
+                <span data-auth-email class="text-[11px] text-on-surface-variant dark:text-white/60">guest@finsense.ai</span>
+            </div>
+        </div>
+        <button class="w-full text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="toggleTheme()">
+            <span class="material-symbols-outlined" id="theme-toggle-icon">dark_mode</span>
+            <span class="font-body-sm" id="theme-toggle-text">Dark Mode</span>
+        </button>
+        <button class="w-full text-left text-on-surface-variant hover:bg-surface-container-high dark:text-white/70 dark:hover:bg-white/10 px-4 py-3 flex items-center gap-3 rounded-lg transition-all" onclick="window.FinSenseAuth.signOut()">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="font-body-sm">Sign Out</span>
+        </button>
+    </div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 w-full flex flex-col min-h-screen">
+    <div class="max-w-[800px] mx-auto w-full px-container-margin py-xl flex-1 space-y-lg">
+        <!-- Greeting -->
+        <div class="mb-xl">
+            <h2 class="text-page-title font-page-title text-on-surface dark:text-white" id="greeting-text">Good evening, Guest</h2>
+            <p class="text-on-surface-variant dark:text-white/60 mt-xs">How can I assist your financial journey today?</p>
+        </div>
+        <!-- Query Input Card -->
+        <div class="bg-surface-container-lowest dark:bg-[#1f1b4c] border-l-[4px] border-primary dark:border-[#adc9eb] shadow-[0_4px_24px_rgba(124,58,237,0.08)] rounded-xl p-md flex flex-col gap-md relative overflow-hidden transition-all focus-within:shadow-lg focus-within:border-l-[6px]" id="input-card">
+            <div class="flex gap-md items-start">
+                <div class="flex-1">
+                    <textarea class="w-full bg-transparent border-none focus:ring-0 text-body-lg text-on-surface dark:text-white placeholder:text-outline dark:placeholder:text-white/30 p-0 resize-none min-h-[100px] max-h-[200px] transition-all duration-200" id="query-input" maxlength="500" placeholder="Ask me anything about Indian personal finance..."></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-between border-t border-outline-variant dark:border-white/10 pt-md">
+                <div class="flex gap-sm overflow-x-auto hide-scrollbar pb-1">
+                    <button class="chip-btn whitespace-nowrap px-sm py-xs bg-surface-container-high dark:bg-white/10 text-primary dark:text-[#adc9eb] font-medium rounded-full text-xs hover:bg-primary-fixed dark:hover:bg-white/20 transition-all active:scale-95" data-text="What is my Home loan EMI for 50L at 8.5% for 20 years?">Home Loan EMI</button>
+                    <button class="chip-btn whitespace-nowrap px-sm py-xs bg-surface-container-high dark:bg-white/10 text-primary dark:text-[#adc9eb] font-medium rounded-full text-xs hover:bg-primary-fixed dark:hover:bg-white/20 transition-all active:scale-95" data-text="Compare 1-year FD rates across top Indian banks.">FD Comparison</button>
+                    <button class="chip-btn whitespace-nowrap px-sm py-xs bg-surface-container-high dark:bg-white/10 text-primary dark:text-[#adc9eb] font-medium rounded-full text-xs hover:bg-primary-fixed dark:hover:bg-white/20 transition-all active:scale-95" data-text="Calculate income tax for 15L salary in New Tax Regime.">Tax Calculation</button>
+                    <button class="chip-btn whitespace-nowrap px-sm py-xs bg-surface-container-high dark:bg-white/10 text-primary dark:text-[#adc9eb] font-medium rounded-full text-xs hover:bg-primary-fixed dark:hover:bg-white/20 transition-all active:scale-95" data-text="Expected returns for 10k monthly SIP for 15 years at 12%.">SIP Returns</button>
+                </div>
+                <div class="flex items-center gap-md">
+                    <span class="text-label-caps font-label-caps text-outline dark:text-white/40 transition-colors" id="char-counter">0 / 500</span>
+                    <button class="bg-primary hover:bg-surface-tint text-on-primary px-lg py-sm rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-sm" onclick="handleSubmit()">
+                        <span>Ask FinSense</span>
+                        <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Loading State -->
+        <div class="hidden space-y-md py-xl text-center" id="loading-state">
+            <div class="w-16 h-16 bg-primary-fixed text-primary rounded-full flex items-center justify-center mx-auto violet-pulse mb-md">
+                <span class="material-symbols-outlined text-4xl">search</span>
+            </div>
+            <div class="space-y-sm">
+                <p class="text-section-head font-section-head text-primary dark:text-[#adc9eb] transition-opacity duration-300 min-h-[32px]" id="loading-msg">Searching live financial data...</p>
+                <div class="max-w-[300px] mx-auto">
+                    <div class="indeterminate-progress rounded-full"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Response Container -->
+        <div class="space-y-lg" id="response-container">
+            <!-- Initial Prompt State (hidden once queries are sent) -->
+            <div class="p-lg border-2 border-dashed border-outline-variant dark:border-white/10 rounded-xl text-center" id="initial-prompt-state">
+                <span class="material-symbols-outlined text-outline dark:text-white/30 text-4xl mb-2">chat</span>
+                <p class="text-on-surface-variant dark:text-white/40">Ask a complex financial question to begin calculations and search.</p>
+            </div>
+        </div>
+        <!-- Error State -->
+        <div class="hidden bg-surface-container-lowest dark:bg-[#1f1b4c] shadow-md rounded-xl border-l-[4px] border-error p-xl text-center space-y-md" id="error-state">
+            <div class="w-12 h-12 bg-error-container text-error rounded-full flex items-center justify-center mx-auto">
+                <span class="material-symbols-outlined">error</span>
+            </div>
+            <div class="space-y-xs">
+                <h3 class="text-card-title font-card-title text-on-surface dark:text-white">Something went wrong</h3>
+                <p class="text-on-surface-variant dark:text-white/60">Could not connect to the backend server. Make sure FastAPI is running on port 8000.</p>
+            </div>
+            <button class="bg-error text-on-error px-xl py-sm rounded-lg font-semibold hover:opacity-90 transition-all active:scale-95" onclick="handleSubmit()">
+                Retry Question
+            </button>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer class="w-full py-xl px-container-margin flex flex-col items-center gap-md text-center bg-surface-container-lowest dark:bg-[#0f0d26] border-t border-outline-variant dark:border-white/10 mt-auto">
+        <h1 class="text-label-caps font-label-caps text-outline dark:text-white/40">FINSENSE AI</h1>
+        <div class="flex flex-wrap justify-center gap-xl">
+            <a class="text-body-sm text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors" href="#">Privacy Policy</a>
+            <a class="text-body-sm text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors" href="#">Terms of Service</a>
+            <a class="text-body-sm text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] transition-colors" href="#">Disclosure</a>
+        </div>
+        <p class="text-body-sm text-on-surface-variant dark:text-white/40 max-w-lg">
+            © 2026 FinSense AI. All rights reserved. Financial Disclaimer: Content for educational purposes only.
+        </p>
+    </footer>
+</main>
+
+<script>
+    const textarea = document.getElementById('query-input');
+    const counter = document.getElementById('char-counter');
+    const inputCard = document.getElementById('input-card');
+    
+    // Textarea auto-expand
+    textarea.addEventListener('input', function() {
+        this.style.height = '100px';
+        const scrollHeight = this.scrollHeight;
+        this.style.height = Math.min(scrollHeight, 200) + 'px';
+        
+        const count = this.value.length;
+        counter.innerText = `${count} / 500`;
+        
+        if (count >= 450) {
+            counter.classList.add('text-error', 'font-bold');
+        } else {
+            counter.classList.remove('text-error', 'font-bold');
+        }
+    });
+
+    // Ctrl+Enter keyboard shortcut
+    textarea.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmit();
+        }
+    });
+
+    // Loading Messages Sequence
+    const loadingMessages = [
+        "Searching live financial data...",
+        "Running calculations...",
+        "Analyzing market trends...",
+        "Verifying bank regulations...",
+        "Preparing your personalized answer..."
+    ];
+
+    let loadingInterval;
+    function startLoadingSequence() {
+        const loadingMsg = document.getElementById('loading-msg');
+        let index = 0;
+        loadingMsg.innerText = loadingMessages[0];
+        
+        loadingInterval = setInterval(() => {
+            loadingMsg.classList.add('opacity-0');
+            setTimeout(() => {
+                index = (index + 1) % loadingMessages.length;
+                loadingMsg.innerText = loadingMessages[index];
+                loadingMsg.classList.remove('opacity-0');
+            }, 300);
+        }, 1800);
+    }
+
+    // Interactive Chips logic
+    document.querySelectorAll('.chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = btn.getAttribute('data-text');
+            textarea.value = text;
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input'));
+        });
+    });
+
+    const queryHistory = [];
+    function updateSidebarHistory(query) {
+        if (!queryHistory.includes(query)) {
+            queryHistory.unshift(query);
+            if (queryHistory.length > 5) queryHistory.pop();
+        }
+        const sidebar = document.getElementById('history-sidebar');
+        sidebar.innerHTML = "";
+        queryHistory.forEach(q => {
+            const truncated = q.length > 28 ? q.substring(0, 25) + '...' : q;
+            const btn = document.createElement('button');
+            btn.className = "w-full text-left truncate text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] hover:bg-surface-container dark:hover:bg-white/10 px-2 py-1.5 rounded transition-colors block text-xs";
+            btn.title = q;
+            btn.innerText = truncated;
+            btn.onclick = () => {
+                textarea.value = q;
+                textarea.dispatchEvent(new Event('input'));
+                textarea.focus();
+            };
+            sidebar.appendChild(btn);
+        });
+    }
+
+    async function loadQueryHistory() {
+        if (window.bypassAuth || !window.supabaseClient) {
+            console.log("Offline mode: Skipping database query history load.");
+            return;
+        }
+        try {
+            const session = await window.FinSenseAuth.getSession();
+            if (!session) return;
+            
+            const { data, error } = await window.supabaseClient
+                .from('query_history')
+                .select('query, response')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
+            const sidebar = document.getElementById('history-sidebar');
+            sidebar.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                sidebar.innerHTML = '<div class="text-outline dark:text-white/30 italic px-2">No queries yet. Ask your first question!</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const q = item.query;
+                const truncated = q.length > 28 ? q.substring(0, 25) + '...' : q;
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left truncate text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-[#adc9eb] hover:bg-surface-container dark:hover:bg-white/10 px-2 py-1.5 rounded transition-colors block text-xs";
+                btn.title = q;
+                btn.innerText = truncated;
+                btn.onclick = () => {
+                    renderResponse(q, item.response);
+                };
+                sidebar.appendChild(btn);
+            });
+        } catch (err) {
+            console.error("Error fetching query history:", err);
+        }
+    }
+
+    async function saveResponse(query, data) {
+        if (window.bypassAuth || !window.supabaseClient) {
+            alert("Database is in Developer Bypass Mode. Responses cannot be saved.");
+            return;
+        }
+        try {
+            const session = await window.FinSenseAuth.getSession();
+            if (!session) {
+                alert("You must be logged in to save responses.");
+                return;
+            }
+
+            // Check if already saved
+            const { data: existing, error: checkError } = await window.supabaseClient
+                .from('saved_responses')
+                .select('id')
+                .eq('query', query)
+                .limit(1);
+
+            if (checkError) throw checkError;
+            if (existing && existing.length > 0) {
+                alert("This response is already saved!");
+                return;
+            }
+
+            const { error } = await window.supabaseClient
+                .from('saved_responses')
+                .insert({
+                    query: query,
+                    response: data
+                });
+
+            if (error) throw error;
+            alert("Response bookmarked successfully!");
+        } catch (err) {
+            console.error("Error saving response:", err);
+            alert("Failed to save response: " + err.message);
+        }
+    }
+
+    function renderResponse(query, data) {
+        const responseContainer = document.getElementById('response-container');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const initialPrompt = document.getElementById('initial-prompt-state');
+        
+        if (initialPrompt) initialPrompt.classList.add('hidden');
+        responseContainer.classList.add('hidden');
+        errorState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+
+        // Clear previous dynamically created response cards
+        const dynamicCards = responseContainer.querySelectorAll('.dynamic-response-card');
+        dynamicCards.forEach(card => card.remove());
+
+        // Build dynamic response card
+        const card = document.createElement('div');
+        card.className = "bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 shadow-[0_4px_24px_rgba(124,58,237,0.08)] rounded-xl border-l-[4px] border-primary dark:border-[#adc9eb] overflow-hidden response-entrance dynamic-response-card";
+
+        // Tools Tags
+        let tagsHtml = "";
+        if (data.tools_used && data.tools_used.includes("web_search")) {
+            tagsHtml += `
+                <span class="px-sm py-1 bg-[#BFDBFE] dark:bg-[#1e3a8a] text-[#1E3A8A] dark:text-[#adc9eb] text-[10px] font-bold rounded flex items-center gap-1 uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[14px]">public</span> Web Search
+                </span>`;
+        }
+        if (data.tools_used && data.tools_used.includes("finance_calculator")) {
+            tagsHtml += `
+                <span class="px-sm py-1 bg-[#DDD6FE] dark:bg-[#4c1d95] text-[#4C1D95] dark:text-[#eaddff] text-[10px] font-bold rounded flex items-center gap-1 uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[14px]">calculate</span> Calculator
+                </span>`;
+        }
+
+        // Key Takeaways List
+        let pointsHtml = "";
+        data.key_points.forEach(point => {
+            pointsHtml += `
+                <li class="flex items-start gap-3">
+                    <span class="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-primary dark:bg-primary-fixed"></span>
+                    <span class="text-body-sm text-on-surface-variant dark:text-white/80">${point}</span>
+                </li>`;
+        });
+
+        // Calculations / Tables
+        let calcHtml = "";
+        if (data.calculations && Object.keys(data.calculations).length > 0 && !data.calculations.error) {
+            calcHtml += `
+                <div class="border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden mt-md">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-container-high dark:bg-[#2b2564]">
+                            <tr>
+                                <th class="p-md text-label-caps font-label-caps text-on-surface dark:text-white">Parameter</th>
+                                <th class="p-md text-label-caps font-label-caps text-on-surface dark:text-white text-right">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant dark:divide-white/10">`;
+            for (const [key, value] of Object.entries(data.calculations)) {
+                if (key === "error") continue;
+                const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                let formattedValue = value;
+                if (typeof value === 'number') {
+                    if (key.includes('principal') || key.includes('payment') || key.includes('emi') || key.includes('amount') || key.includes('invested') || key.includes('interest') || key.includes('returns') || key.includes('income') || key.includes('payable') || key.includes('take_home')) {
+                        formattedValue = `₹${value.toLocaleString('en-IN')}`;
+                    } else if (key.includes('rate') || key.includes('percent')) {
+                        formattedValue = `${value}%`;
+                    }
+                }
+                calcHtml += `
+                            <tr>
+                                <td class="p-md text-body-sm font-medium dark:text-white/90">${formattedKey}</td>
+                                <td class="p-md text-body-sm text-right font-semibold dark:text-white">${formattedValue}</td>
+                            </tr>`;
+            }
+            calcHtml += `
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        // Sources
+        let sourcesHtml = "";
+        if (data.sources && data.sources.length > 0) {
+            sourcesHtml += `
+                <div class="mt-md space-y-2">
+                    <span class="text-xs font-bold text-outline dark:text-white/40">Sources Consulted:</span>
+                    <div class="flex flex-wrap gap-2">`;
+            data.sources.forEach(src => {
+                sourcesHtml += `
+                    <a href="${src.url}" target="_blank" class="text-xs text-primary dark:text-[#adc9eb] hover:underline bg-primary-container/10 dark:bg-white/10 px-2 py-1 rounded flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">link</span> ${src.title || 'Source'}
+                    </a>`;
+            });
+            sourcesHtml += `
+                    </div>
+                </div>`;
+        }
+
+        const sentences = data.answer.split(/\.\s+/).filter(Boolean);
+        const formattedAnswer = sentences.map(s => {
+            const clean = s.trim();
+            if (!clean) return '';
+            const ended = clean.endsWith('.') || clean.endsWith('?') || clean.endsWith('!') ? clean : clean + '.';
+            return `<p class="mb-2 last:mb-0 leading-relaxed">${ended}</p>`;
+        }).join('');
+
+        window.activeSaveResponseData = data;
+
+        card.innerHTML = `
+            <div class="p-lg border-b border-outline-variant dark:border-white/10 flex justify-between items-start">
+                <div class="space-y-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-body-sm font-semibold text-outline dark:text-white/40">You asked:</span>
+                        <span class="text-body-lg font-medium italic text-primary dark:text-[#adc9eb]">"${query}"</span>
+                    </div>
+                    <span class="text-label-caps font-label-caps text-outline dark:text-white/40">Just now</span>
+                </div>
+                <div class="flex gap-2">
+                    <button class="p-2 hover:bg-primary-fixed/30 dark:hover:bg-white/10 hover:scale-110 rounded-full text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-white transition-all duration-200" title="Bookmark Answer" onclick="saveResponse(\`${query.replace(/'/g, "\\'")}\`, window.activeSaveResponseData)"><span class="material-symbols-outlined">bookmark</span></button>
+                    <button class="p-2 hover:bg-primary-fixed/30 dark:hover:bg-white/10 hover:scale-110 rounded-full text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-white transition-all duration-200" title="Copy Answer" onclick="navigator.clipboard.writeText(\`${data.answer.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)"><span class="material-symbols-outlined">content_copy</span></button>
+                </div>
+            </div>
+            <div class="px-lg py-md flex gap-sm border-b border-outline-variant dark:border-white/10 bg-surface-bright/50 dark:bg-[#1a1642]/50">
+                ${tagsHtml}
+            </div>
+            <div class="p-lg bg-white dark:bg-[#1f1b4c] space-y-lg">
+                <div class="text-body-lg text-on-surface dark:text-white leading-relaxed">
+                     ${formattedAnswer}
+                </div>
+                <div class="bg-[#D1FAE5] dark:bg-[#093a24] border-l-4 border-secondary p-lg rounded-r-lg">
+                    <div class="flex items-center gap-2 mb-2 text-secondary dark:text-[#82f5c1]">
+                        <span class="material-symbols-outlined">verified</span>
+                        <span class="font-semibold text-body-sm">FinSense AI Recommendation</span>
+                    </div>
+                    <p class="text-on-secondary-container dark:text-[#a3f4cd] font-medium">${data.recommendation}</p>
+                </div>
+                <div class="bg-[#F5F3FF] dark:bg-[#2b2564] p-lg rounded-xl space-y-md">
+                    <h4 class="font-semibold text-primary dark:text-[#adc9eb] text-body-sm">Key Takeaways</h4>
+                    <ul class="space-y-sm">
+                        ${pointsHtml}
+                    </ul>
+                </div>
+                ${calcHtml}
+                ${sourcesHtml}
+            </div>
+            <div class="p-lg bg-surface-container-low dark:bg-[#16123a] flex flex-col md:flex-row justify-between gap-md border-t border-outline-variant dark:border-white/10 text-[11px] text-outline dark:text-white/40">
+                <span>${data.disclaimer}</span>
+                <span class="whitespace-nowrap font-semibold ml-md">Last updated: ${data.last_updated}</span>
+            </div>`;
+
+        responseContainer.appendChild(card);
+        responseContainer.classList.remove('hidden');
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // API Integration & Result Rendering
+    async function handleSubmit() {
+        const query = textarea.value.trim();
+        if (!query) {
+            textarea.classList.add('ring-2', 'ring-error');
+            setTimeout(() => textarea.classList.remove('ring-2', 'ring-error'), 1000);
+            return;
+        }
+
+        const responseContainer = document.getElementById('response-container');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const initialPrompt = document.getElementById('initial-prompt-state');
+        
+        if (initialPrompt) initialPrompt.classList.add('hidden');
+        responseContainer.classList.add('hidden');
+        errorState.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+        inputCard.classList.add('loading-card-pulse', 'pointer-events-none', 'opacity-80');
+        
+        startLoadingSequence();
+
+        try {
+            const session = await window.FinSenseAuth.getSession();
+            const token = session ? session.access_token : "";
+            const baseUrl = window.location.origin.startsWith('file') ? 'http://127.0.0.1:8000' : '';
+            
+            const res = await fetch(`${baseUrl}/api/query`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!res.ok) {
+                throw new Error(`API error: ${res.status}`);
+            }
+
+            const data = await res.json();
+
+            // Clear previous dynamically created response cards
+            const dynamicCards = responseContainer.querySelectorAll('.dynamic-response-card');
+            dynamicCards.forEach(card => card.remove());
+
+            // Build dynamic response card
+            const card = document.createElement('div');
+            card.className = "bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 shadow-[0_4px_24px_rgba(124,58,237,0.08)] rounded-xl border-l-[4px] border-primary dark:border-[#adc9eb] overflow-hidden response-entrance dynamic-response-card";
+
+            // Tools Tags
+            let tagsHtml = "";
+            if (data.tools_used.includes("web_search")) {
+                tagsHtml += `
+                    <span class="px-sm py-1 bg-[#BFDBFE] dark:bg-[#1e3a8a] text-[#1E3A8A] dark:text-[#adc9eb] text-[10px] font-bold rounded flex items-center gap-1 uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-[14px]">public</span> Web Search
+                    </span>`;
+            }
+            if (data.tools_used.includes("finance_calculator")) {
+                tagsHtml += `
+                    <span class="px-sm py-1 bg-[#DDD6FE] dark:bg-[#4c1d95] text-[#4C1D95] dark:text-[#eaddff] text-[10px] font-bold rounded flex items-center gap-1 uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-[14px]">calculate</span> Calculator
+                    </span>`;
+            }
+
+            // Key Takeaways List
+            let pointsHtml = "";
+            data.key_points.forEach(point => {
+                pointsHtml += `
+                    <li class="flex items-start gap-3">
+                        <span class="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-primary dark:bg-primary-fixed"></span>
+                        <span class="text-body-sm text-on-surface-variant dark:text-white/80">${point}</span>
+                    </li>`;
+            });
+
+            // Calculations / Tables
+            let calcHtml = "";
+            if (data.calculations && Object.keys(data.calculations).length > 0 && !data.calculations.error) {
+                calcHtml += `
+                    <div class="border border-outline-variant dark:border-white/10 rounded-xl overflow-hidden mt-md">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-surface-container-high dark:bg-[#2b2564]">
+                                <tr>
+                                    <th class="p-md text-label-caps font-label-caps text-on-surface dark:text-white">Parameter</th>
+                                    <th class="p-md text-label-caps font-label-caps text-on-surface dark:text-white text-right">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant dark:divide-white/10">`;
+                for (const [key, value] of Object.entries(data.calculations)) {
+                    if (key === "error") continue;
+                    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    let formattedValue = value;
+                    if (typeof value === 'number') {
+                        if (key.includes('principal') || key.includes('payment') || key.includes('emi') || key.includes('amount') || key.includes('invested') || key.includes('interest') || key.includes('returns') || key.includes('income') || key.includes('payable') || key.includes('take_home')) {
+                            formattedValue = `₹${value.toLocaleString('en-IN')}`;
+                        } else if (key.includes('rate') || key.includes('percent')) {
+                            formattedValue = `${value}%`;
+                        }
+                    }
+                    calcHtml += `
+                                <tr>
+                                    <td class="p-md text-body-sm font-medium dark:text-white/90">${formattedKey}</td>
+                                    <td class="p-md text-body-sm text-right font-semibold dark:text-white">${formattedValue}</td>
+                                </tr>`;
+                }
+                calcHtml += `
+                            </tbody>
+                        </table>
+                    </div>`;
+            }
+
+            // Sources
+            let sourcesHtml = "";
+            if (data.sources && data.sources.length > 0) {
+                sourcesHtml += `
+                    <div class="mt-md space-y-2">
+                        <span class="text-xs font-bold text-outline dark:text-white/40">Sources Consulted:</span>
+                        <div class="flex flex-wrap gap-2">`;
+                data.sources.forEach(src => {
+                    sourcesHtml += `
+                        <a href="${src.url}" target="_blank" class="text-xs text-primary dark:text-[#adc9eb] hover:underline bg-primary-container/10 dark:bg-white/10 px-2 py-1 rounded flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">link</span> ${src.title || 'Source'}
+                        </a>`;
+                });
+                sourcesHtml += `
+                        </div>
+                    </div>`;
+            }
+
+            const sentences = data.answer.split(/\.\s+/).filter(Boolean);
+            const formattedAnswer = sentences.map(s => {
+                const clean = s.trim();
+                if (!clean) return '';
+                const ended = clean.endsWith('.') || clean.endsWith('?') || clean.endsWith('!') ? clean : clean + '.';
+                return `<p class="mb-2 last:mb-0 leading-relaxed">${ended}</p>`;
+            }).join('');
+
+            window.activeSaveResponseData = data;
+            card.innerHTML = `
+                <div class="p-lg border-b border-outline-variant dark:border-white/10 flex justify-between items-start">
+                    <div class="space-y-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="text-body-sm font-semibold text-outline dark:text-white/40">You asked:</span>
+                            <span class="text-body-lg font-medium italic text-primary dark:text-[#adc9eb]">"${query}"</span>
+                        </div>
+                        <span class="text-label-caps font-label-caps text-outline dark:text-white/40">Just now</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="p-2 hover:bg-primary-fixed/30 dark:hover:bg-white/10 hover:scale-110 rounded-full text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-white transition-all duration-200" title="Bookmark Answer" onclick="saveResponse(\`${query.replace(/'/g, "\\'")}\`, window.activeSaveResponseData)"><span class="material-symbols-outlined">bookmark</span></button>
+                        <button class="p-2 hover:bg-primary-fixed/30 dark:hover:bg-white/10 hover:scale-110 rounded-full text-on-surface-variant dark:text-white/60 hover:text-primary dark:hover:text-white transition-all duration-200" title="Copy Answer" onclick="navigator.clipboard.writeText(\`${data.answer.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)"><span class="material-symbols-outlined">content_copy</span></button>
+                    </div>
+                </div>
+                <div class="px-lg py-md flex gap-sm border-b border-outline-variant dark:border-white/10 bg-surface-bright/50 dark:bg-[#1a1642]/50">
+                    ${tagsHtml}
+                </div>
+                <div class="p-lg bg-white dark:bg-[#1f1b4c] space-y-lg">
+                    <div class="text-body-lg text-on-surface dark:text-white leading-relaxed">
+                        ${formattedAnswer}
+                    </div>
+                    <div class="bg-[#D1FAE5] dark:bg-[#093a24] border-l-4 border-secondary p-lg rounded-r-lg">
+                        <div class="flex items-center gap-2 mb-2 text-secondary dark:text-[#82f5c1]">
+                            <span class="material-symbols-outlined">verified</span>
+                            <span class="font-semibold text-body-sm">FinSense AI Recommendation</span>
+                        </div>
+                        <p class="text-on-secondary-container dark:text-[#a3f4cd] font-medium">${data.recommendation}</p>
+                    </div>
+                    <div class="bg-[#F5F3FF] dark:bg-[#2b2564] p-lg rounded-xl space-y-md">
+                        <h4 class="font-semibold text-primary dark:text-[#adc9eb] text-body-sm">Key Takeaways</h4>
+                        <ul class="space-y-sm">
+                            ${pointsHtml}
+                        </ul>
+                    </div>
+                    ${calcHtml}
+                    ${sourcesHtml}
+                </div>
+                <div class="p-lg bg-surface-container-low dark:bg-[#16123a] flex flex-col md:flex-row justify-between gap-md border-t border-outline-variant dark:border-white/10 text-[11px] text-outline dark:text-white/40">
+                    <span>${data.disclaimer}</span>
+                    <span class="whitespace-nowrap font-semibold ml-md">Last updated: ${data.last_updated}</span>
+                </div>`;
+
+            responseContainer.appendChild(card);
+            
+            // Show new results card
+            loadingState.classList.add('hidden');
+            responseContainer.classList.remove('hidden');
+
+            // Save query to Supabase history or fallback to local memory
+            if (!window.bypassAuth && window.supabaseClient) {
+                window.supabaseClient
+                    .from('query_history')
+                    .insert({
+                        query: query,
+                        response: data,
+                        tools_used: data.tools_used || []
+                    })
+                    .then(({ error }) => {
+                        if (error) console.error("Error saving to query_history:", error);
+                        loadQueryHistory(); // Refresh sidebar history from DB
+                    });
+            } else {
+                updateSidebarHistory(query);
+            }
+
+            // Reset inputs
+            textarea.value = "";
+            textarea.style.height = '100px';
+            counter.innerText = "0 / 500";
+            inputCard.classList.remove('loading-card-pulse', 'pointer-events-none', 'opacity-80');
+
+            // Scroll to view
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (err) {
+            console.error("API Call Failed:", err);
+            loadingState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            inputCard.classList.remove('loading-card-pulse', 'pointer-events-none', 'opacity-80');
+        } finally {
+            clearInterval(loadingInterval);
+        }
+    }
+
+    // Set Greeting depending on time of day
+    function updateGreeting() {
+        const now = new Date();
+        const hours = now.getHours();
+        const greetingEl = document.getElementById('greeting-text');
+        let greeting = "";
+
+        if (hours >= 5 && hours < 12) {
+            greeting = "Good morning";
+        } else if (hours >= 12 && hours < 17) {
+            greeting = "Good afternoon";
+        } else {
+            greeting = "Good evening";
+        }
+        greetingEl.innerText = `${greeting}, Guest`;
+    }
+    updateGreeting();
+
+    // Theme Toggle Functionality
+    function toggleTheme() {
+        const html = document.documentElement;
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    // Sync initial state of toggle text and icon in sidebar
+    (function() {
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (document.documentElement.classList.contains('dark')) {
+            if (icon) icon.textContent = 'light_mode';
+            if (text) text.textContent = 'Light Mode';
+        } else {
+            if (icon) icon.textContent = 'dark_mode';
+            if (text) text.textContent = 'Dark Mode';
+        }
+    })();
+</script>
+</body>
+</html>
