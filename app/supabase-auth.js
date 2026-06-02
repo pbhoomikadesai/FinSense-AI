@@ -132,6 +132,30 @@
             window.location.href = 'landing.html';
         },
 
+        resetPasswordForEmail: async (email) => {
+            await loadConfig();
+            if (bypassAuth) {
+                alert("Auth is bypassed in local development mode. Simulating reset link sent to: " + email);
+                return;
+            }
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/reset-password.html'
+            });
+            if (error) throw error;
+        },
+
+        updatePassword: async (newPassword) => {
+            await loadConfig();
+            if (bypassAuth) {
+                alert("Auth is bypassed in local development mode. Simulating password update...");
+                return;
+            }
+            const { error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+            if (error) throw error;
+        },
+
         checkAuthAndRedirect: async (pageType) => {
             await loadConfig();
             const session = await window.FinSenseAuth.getSession();

@@ -223,7 +223,7 @@
 <div class="space-y-xs relative">
 <div class="flex justify-between items-center">
 <label class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant" for="password">Password</label>
-<a class="text-primary hover:underline text-body-sm font-card-title" href="#">Forgot password?</a>
+<a class="text-primary hover:underline text-body-sm font-card-title" href="#" onclick="openForgotModal()">Forgot password?</a>
 </div>
 <div class="relative">
 <input class="w-full px-lg py-md bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg transition-all outline-none text-on-surface dark:text-white" id="password" placeholder="••••••••" type="password"/>
@@ -247,11 +247,72 @@
 </div>
 </section>
 </main>
+<!-- Forgot Password Modal -->
+<div id="forgot-password-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-[#181445]/60 dark:bg-black/80 backdrop-blur-sm" onclick="closeForgotModal()"></div>
+    
+    <!-- Modal Box -->
+    <div class="relative bg-surface-container-lowest dark:bg-[#1f1b4c] border border-outline-variant dark:border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-lg space-y-md z-10" id="forgot-modal-box">
+        <div class="flex justify-between items-center mb-md">
+            <h3 class="font-page-title text-card-title text-on-surface dark:text-white leading-tight">Reset Password</h3>
+            <button class="text-on-surface-variant hover:text-primary dark:text-white/60 dark:hover:text-white p-1 rounded-full hover:bg-surface-container dark:hover:bg-white/10 transition-colors" onclick="closeForgotModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <p class="text-body-sm text-on-surface-variant dark:text-white/70">
+            Enter your email address and we'll send you a recovery link to reset your password.
+        </p>
+        <div class="space-y-xs">
+            <label class="font-label-caps text-label-caps text-on-surface-variant dark:text-outline-variant" for="forgot-email">Email Address</label>
+            <input class="w-full px-lg py-md bg-surface-container-low dark:bg-[#131130] border border-outline-variant dark:border-white/20 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg transition-all outline-none text-on-surface dark:text-white" id="forgot-email" placeholder="name@company.com" type="email"/>
+        </div>
+        <button class="w-full py-md bg-primary hover:bg-primary-container text-white font-card-title text-card-title rounded-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.98] mt-lg flex items-center justify-center gap-2" id="send-reset-btn" onclick="handleSendResetLink()">
+            <span>Send Reset Link</span>
+        </button>
+    </div>
+</div>
+
 <!-- Theme Toggle Floating Action -->
 <button class="fixed bottom-lg right-lg h-12 w-12 rounded-full bg-surface-container-highest dark:bg-[#1f1b4c] shadow-xl flex items-center justify-center text-primary dark:text-[#adc9eb] transition-all hover:scale-110 active:scale-95 z-50" onclick="toggleTheme()">
 <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
 </button>
 <script>
+        function openForgotModal() {
+            const emailInput = document.getElementById('email').value.trim();
+            if (emailInput) {
+                document.getElementById('forgot-email').value = emailInput;
+            }
+            document.getElementById('forgot-password-modal').classList.remove('hidden');
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgot-password-modal').classList.add('hidden');
+        }
+
+        async function handleSendResetLink() {
+            const email = document.getElementById('forgot-email').value.trim();
+            if (!email) {
+                alert('Please enter your email address.');
+                return;
+            }
+
+            const btn = document.getElementById('send-reset-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin material-symbols-outlined mr-2">progress_activity</span>Sending...`;
+
+            try {
+                await window.FinSenseAuth.resetPasswordForEmail(email);
+                alert('Password reset link has been sent to your email address!');
+                closeForgotModal();
+            } catch (err) {
+                alert(err.message || 'Failed to send password reset email.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Send Reset Link';
+            }
+        }
+
         function togglePassword() {
             const pwd = document.getElementById('password');
             const icon = document.getElementById('password-toggle-icon');
