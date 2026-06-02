@@ -1,7 +1,7 @@
 # FinSense AI Backend
 
 > [!TIP]
-> 🌐 **Live Production Link**: [https://finsense-ai-1.onrender.com](https://finsense-ai-1.onrender.com)
+> 🌐 **Live Production Link**: [https://fin-sense-ai-vert.vercel.app](https://fin-sense-ai-vert.vercel.app)
 
 FinSense AI is an India-specific personal finance agent backend built with LangGraph, FastAPI, Groq LLM (`llama-3.3-70b-versatile`), and Tavily Web Search. It helps users answer complex personal finance questions, perform calculations (EMI, SIP, Tax, Fixed Deposits), and get structured financial summaries with domain-restricted information and full source citations.
 
