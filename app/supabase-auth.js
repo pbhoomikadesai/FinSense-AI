@@ -28,7 +28,15 @@
                     return null;
                 }
 
-                supabaseClient = supabase.createClient(data.supabaseUrl, data.supabaseAnonKey);
+                const remember = localStorage.getItem('finsense_remember_me') !== 'false';
+                const storageOption = remember ? window.localStorage : window.sessionStorage;
+                supabaseClient = supabase.createClient(data.supabaseUrl, data.supabaseAnonKey, {
+                    auth: {
+                        storage: storageOption,
+                        persistSession: true,
+                        autoRefreshToken: true
+                    }
+                });
                 window.supabaseClient = supabaseClient;
                 return supabaseClient;
             } catch (err) {
@@ -85,7 +93,7 @@
             if (error) throw error;
         },
 
-        signInWithEmail: async (email, password) => {
+        signInWithEmail: async (email, password, remember = true) => {
             await loadConfig();
             if (bypassAuth) {
                 // Mock success
@@ -93,6 +101,31 @@
                     user: { email, user_metadata: {} }
                 };
             }
+
+            // Set remember me preference
+            localStorage.setItem('finsense_remember_me', remember ? 'true' : 'false');
+
+            // Re-create Supabase client to apply selected storage immediately
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.supabaseUrl && data.supabaseAnonKey) {
+                        const storageOption = remember ? window.localStorage : window.sessionStorage;
+                        supabaseClient = supabase.createClient(data.supabaseUrl, data.supabaseAnonKey, {
+                            auth: {
+                                storage: storageOption,
+                                persistSession: true,
+                                autoRefreshToken: true
+                            }
+                        });
+                        window.supabaseClient = supabaseClient;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to re-initialize client during login:", err);
+            }
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password

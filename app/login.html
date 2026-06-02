@@ -367,6 +367,7 @@
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
+            const remember = document.getElementById('remember').checked;
 
             if (!email || !password) {
                 alert('Please enter both your email address and password.');
@@ -379,7 +380,7 @@
             btn.innerHTML = `<span class="animate-spin material-symbols-outlined mr-2">progress_activity</span>Signing In...`;
 
             try {
-                await window.FinSenseAuth.signInWithEmail(email, password);
+                await window.FinSenseAuth.signInWithEmail(email, password, remember);
                 window.location.href = 'index.html';
             } catch (err) {
                 alert(err.message || "Failed to sign in. Please check your credentials.");
