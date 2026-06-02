@@ -1,0 +1,7 @@
+tests/
+.pytest_cache/
+README.md
+walkthrough.md
+task.md
+deployment_guide.md
+.git/
